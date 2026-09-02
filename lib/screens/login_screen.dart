@@ -12,13 +12,20 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _idController = TextEditingController();
-  final _pwdController = TextEditingController();
+  final TextEditingController _idController = TextEditingController();
+  final TextEditingController _pwdController = TextEditingController();
   bool _isLoading = false;
 
+  @override
+  void dispose() {
+    _idController.dispose();
+    _pwdController.dispose();
+    super.dispose();
+  }
+
   Future<void> _login() async {
-    final id = _idController.text.trim();
-    final pwd = _pwdController.text.trim();
+    final String id = _idController.text.trim();
+    final String pwd = _pwdController.text.trim();
 
     if (id.isEmpty || pwd.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -30,16 +37,17 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
 
     try {
-      final response = await http.post(
-        Uri.parse("https://smartcitybackend-production-9d26.up.railway.app/api/v1/auth/login"),
+      final Uri url = Uri.parse("https://smartcitybackend-production-9d26.up.railway.app/api/v1/auth/login");
+      final http.Response response = await http.post(
+        url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"national_id": id, "password": pwd}),
       );
 
-      final data = jsonDecode(response.body);
+      final Map<String, dynamic> data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        final user = data['user'];
+        final Map<String, dynamic> user = data['user'] as Map<String, dynamic>;
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
@@ -124,7 +132,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: _isLoading ? null : _login,
                   child: _isLoading
                       ? const CircularProgressIndicator(color: Color(0xFF0B132B))
-                      : const Text('تسجيل الدخول', style: TextStyle(color: Color(0xFF0B132B), fontSize: 16, fontWeight: FontWeight.bold)),
+                      : const Text(
+                          'تسجيل الدخول',
+                          style: TextStyle(color: Color(0xFF0B132B), fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
                 ),
               ),
               const SizedBox(height: 16),
@@ -149,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: const Column(
                   children: [
-                    Text('بيانات الدخول السريعة:', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text('بيانات الدخول التجريبية:', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                     SizedBox(height: 4),
                     Text('المدير: ADMIN-01 | السر: admin123', style: TextStyle(color: Color(0xFF00F5D4), fontSize: 11)),
                     Text('المواطن: USER-01 | السر: user123', style: TextStyle(color: Colors.white54, fontSize: 11)),
