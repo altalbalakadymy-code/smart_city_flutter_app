@@ -10,83 +10,62 @@ class UtilitiesScreen extends StatefulWidget {
 }
 
 class _UtilitiesScreenState extends State<UtilitiesScreen> {
-  bool _ecoMode = true;
+  final String _baseUrl = "https://smartcitybackend-production-9d26.up.railway.app";
+  final _descCtrl = TextEditingController();
+  String _selectedService = 'طوارئ الكهرباء والإنارة';
+  bool _isSending = false;
 
-  void _reportIssueDialog() {
-    final textController = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1C2541),
-        title: const Text('بلاغ عطل طارئ', style: TextStyle(color: Color(0xFFFFB703))),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'أدخل وصف المشكلة (كهرباء / مياه / إنارة):',
-              style: TextStyle(color: Colors.white70, fontSize: 13),
-            ),
-            const SizedBox(height: 10),
-            TextField(
-              controller: textController,
-              style: const TextStyle(color: Colors.white),
-              decoration: InputDecoration(
-                hintText: 'مثال: انقطاع إنارة الشارع الذكي رقم 4...',
-                hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
-                filled: true,
-                fillColor: const Color(0xFF0B132B),
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-              ),
-            ),
-          ],
+  final List<String> _services = const [
+    'طوارئ الكهرباء والإنارة',
+    'شبكة المياه والصرف',
+    'إدارة النفايات وإعادة التدوير',
+    'أعطال شبكة الاتصالات الذكية',
+  ];
+
+  Future<void> _submitReport() async {
+    final desc = _descCtrl.text.trim();
+    if (desc.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى كتابة تفاصيل البلاغ أو المشكلة')),
+      );
+      return;
+    }
+
+    setState(() => _isSending = true);
+
+    try {
+      final res = await http.post(
+        Uri.parse("$_baseUrl/api/v1/utilities/report"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "service_type": _selectedService,
+          "description": desc,
+        }),
+      );
+
+      if (res.statusCode == 200) {
+        _descCtrl.clear();
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('تم إرسال البلاغ لغرفة عمليات المدينة الذكية بنجاح 🚨'),
+            backgroundColor: Color(0xFF06D6A0),
+          ),
+        );
+      } else {
+        throw Exception();
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('تعذر إرسال البلاغ، تحقق من الاتصال'),
+          backgroundColor: Color(0xFFFF5964),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text('إلغاء', style: TextStyle(color: Colors.white54)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFB703)),
-            onPressed: () async {
-              final text = textController.text.trim();
-              if (text.isEmpty) return;
-              Navigator.pop(ctx);
-
-              final url = Uri.parse("https://smartcitybackend-production-9d26.up.railway.app/api/v1/utilities/report");
-              try {
-                final res = await http.post(
-                  url,
-                  headers: {"Content-Type": "application/json"},
-                  body: jsonEncode({
-                    "service_type": "طوارئ المرافق العامة",
-                    "description": text,
-                  }),
-                );
-                if (res.statusCode == 200) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('تم تسجيل البلاغ في قاعدة بيانات المدينة بنجاح ⚡'),
-                      backgroundColor: Color(0xFFFFB703),
-                    ),
-                  );
-                } else {
-                  throw Exception();
-                }
-              } catch (_) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('فشل إرسال البلاغ لقاعدة البيانات السحابية'),
-                    backgroundColor: Color(0xFFFF5964),
-                  ),
-                );
-              }
-            },
-            child: const Text('إرسال البلاغ', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
-          ),
-        ],
-      ),
-    );
+      );
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
   }
 
   @override
@@ -94,162 +73,88 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
       appBar: AppBar(
-        title: const Text('الطاقة والمرافق الذكية'),
+        title: const Text('الطاقة والمرافق العامة'),
         backgroundColor: const Color(0xFF1C2541),
       ),
-      body: ListView(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1C2541), Color(0xFF0B132B)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1C2541),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: const Color(0xFFFFB703).withOpacity(0.3)),
               ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFFFB703).withOpacity(0.4)),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Icon(Icons.bolt_rounded, color: Color(0xFFFFB703), size: 30),
-                    SizedBox(height: 6),
-                    Text('استهلاك الكهرباء', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    Text('14.2 kWh', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Icon(Icons.water_drop_rounded, color: Color(0xFF00F5D4), size: 30),
-                    SizedBox(height: 6),
-                    Text('استهلاك المياه', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    Text('120 L', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Icon(Icons.solar_power_rounded, color: Color(0xFF06D6A0), size: 30),
-                    SizedBox(height: 6),
-                    Text('توليد الطاقة النظيفة', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    Text('68%', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C2541),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Row(
-                  children: [
-                    Icon(Icons.eco_rounded, color: Color(0xFF06D6A0)),
-                    SizedBox(width: 10),
-                    Text('الوضع البيئي الذكي (Eco-Mode)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-                  ],
-                ),
-                Switch(
-                  value: _ecoMode,
-                  activeColor: const Color(0xFF06D6A0),
-                  onChanged: (val) {
-                    setState(() => _ecoMode = val);
-                  },
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'حالة شبكات ومحطات الحي',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          _buildUtilityCard(
-            title: 'شبكة الطاقة والكهرباء',
-            status: 'مستقرة - جهد 220V',
-            statusColor: const Color(0xFF06D6A0),
-            icon: Icons.electric_meter_rounded,
-            iconColor: const Color(0xFFFFB703),
-          ),
-          _buildUtilityCard(
-            title: 'شبكة التغذية المائية',
-            status: 'ضغط ممتاز - جودة نقاء 99.1%',
-            statusColor: const Color(0xFF06D6A0),
-            icon: Icons.water_rounded,
-            iconColor: const Color(0xFF00F5D4),
-          ),
-          _buildUtilityCard(
-            title: 'إدارة النفايات الذكية',
-            status: 'الحاويات الذكية: 40% سعة متبقية',
-            statusColor: const Color(0xFFFFB703),
-            icon: Icons.delete_outline_rounded,
-            iconColor: const Color(0xFFFF5964),
-          ),
-          const SizedBox(height: 20),
-          SizedBox(
-            height: 48,
-            child: ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFFB703),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
-              onPressed: _reportIssueDialog,
-              icon: const Icon(Icons.report_problem_rounded, color: Color(0xFF0B132B)),
-              label: const Text(
-                'الإبلاغ عن عطل أو طوارئ في المرافق',
-                style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold),
+              child: const Row(
+                children: [
+                  Icon(Icons.bolt_rounded, color: Color(0xFFFFB703), size: 30),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('شبكة الاستشعار اللحظي', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        SizedBox(height: 2),
+                        Text('كفاءة الشبكة العامة: 98.4% • لا توجد انقطاعات حرجة', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildUtilityCard({
-    required String title,
-    required String status,
-    required Color statusColor,
-    required IconData icon,
-    required Color iconColor,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1C2541),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: iconColor.withOpacity(0.25)),
-      ),
-      child: Row(
-        children: [
-          CircleAvatar(
-            backgroundColor: iconColor.withOpacity(0.15),
-            child: Icon(icon, color: iconColor),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                const SizedBox(height: 4),
-                Text(status, style: TextStyle(color: statusColor, fontSize: 12)),
-              ],
+            const SizedBox(height: 24),
+            const Text('رفع بلاغ طارئ لغرفة العمليات:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _selectedService,
+              dropdownColor: const Color(0xFF1C2541),
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF1C2541),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              items: _services.map((s) => DropdownMenuItem(value: s, child: Text(s))).toList(),
+              onChanged: (val) {
+                if (val != null) setState(() => _selectedService = val);
+              },
             ),
-          ),
-        ],
+            const SizedBox(height: 14),
+            TextField(
+              controller: _descCtrl,
+              maxLines: 4,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'اكتب وصف المشكلة، الشارع أو رقم العمود/العداد...',
+                hintStyle: const TextStyle(color: Colors.white38),
+                filled: true,
+                fillColor: const Color(0xFF1C2541),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFFFB703),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: _isSending ? null : _submitReport,
+                icon: _isSending
+                    ? const SizedBox.shrink()
+                    : const Icon(Icons.send_rounded, color: Color(0xFF0B132B)),
+                label: _isSending
+                    ? const CircularProgressIndicator(color: Color(0xFF0B132B))
+                    : const Text('إرسال البلاغ فوراً', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
