@@ -226,6 +226,54 @@ class _EmbeddedQatVendorDashboardState extends State<EmbeddedQatVendorDashboard>
     _fetchOrders();
   }
 
+  void _showAddItemDialog() {
+    final typeCtrl = TextEditingController();
+    final gradeCtrl = TextEditingController(text: "سوبر ممتاز");
+    final locCtrl = TextEditingController(text: "سوق شميلة الموحد");
+    final priceCtrl = TextEditingController(text: "15");
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1C2541),
+        title: const Text('إضافة صنف قات للسوق', style: TextStyle(color: Color(0xFF06D6A0), fontSize: 16)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(controller: typeCtrl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'النوع (مثال: همداني قطاف اليوم)')),
+            TextField(controller: gradeCtrl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'الرتبة والجودة')),
+            TextField(controller: locCtrl, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'موقع السوق')),
+            TextField(controller: priceCtrl, keyboardType: TextInputType.number, style: const TextStyle(color: Colors.white), decoration: const InputDecoration(labelText: 'السعر (\$ / ربطة)')),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06D6A0)),
+            onPressed: () async {
+              if (typeCtrl.text.trim().isEmpty) return;
+              Navigator.pop(ctx);
+              await http.post(
+                Uri.parse("$_baseUrl/api/v1/vendor/qat-items"),
+                headers: {"Content-Type": "application/json"},
+                body: jsonEncode({
+                  "vendor_id": widget.vendorUser['id'],
+                  "qat_type": typeCtrl.text.trim(),
+                  "quality_grade": gradeCtrl.text.trim(),
+                  "market_location": locCtrl.text.trim(),
+                  "price": double.tryParse(priceCtrl.text.trim()) ?? 15.0,
+                }),
+              );
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم نشر الصنف في السوق الرقمي 🌿')));
+            },
+            child: const Text('نشر في السوق', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -236,6 +284,12 @@ class _EmbeddedQatVendorDashboardState extends State<EmbeddedQatVendorDashboard>
         actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _fetchOrders),
         ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        backgroundColor: const Color(0xFF06D6A0),
+        onPressed: _showAddItemDialog,
+        icon: const Icon(Icons.add, color: Color(0xFF0B132B)),
+        label: const Text('إضافة صنف جديد', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF06D6A0)))
