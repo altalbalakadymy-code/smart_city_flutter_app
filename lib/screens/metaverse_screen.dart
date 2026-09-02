@@ -1,5 +1,8 @@
+import 'dart:convert';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:webview_flutter/webview_flutter.dart';
+import 'package:http/http.dart' as http;
+import 'retail_screen.dart';
 
 class MetaverseScreen extends StatefulWidget {
   const MetaverseScreen({super.key});
@@ -9,109 +12,78 @@ class MetaverseScreen extends StatefulWidget {
 }
 
 class _MetaverseScreenState extends State<MetaverseScreen> {
-  late final WebViewController _controller;
-  bool _isLoading = true;
+  final String _baseUrl = "https://smartcitybackend-production-9d26.up.railway.app";
+  List<dynamic> businesses = [];
+  bool isLoading = true;
 
-  final String _threeJsHtml = '''
-<!DOCTYPE html>
-<html lang="ar">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>Smart City 3D</title>
-  <style>
-    body { margin: 0; overflow: hidden; background-color: #0b132b; font-family: sans-serif; }
-    #overlay {
-      position: absolute; top: 15px; left: 15px;
-      color: #00f5d4; font-size: 14px; background: rgba(11,19,43,0.8);
-      padding: 10px 14px; border-radius: 8px; border: 1px solid #00f5d4;
-    }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-</head>
-<body>
-  <div id="overlay">🏙️ عالم المدينة الذكية (3D Live)</div>
-  <script>
-    const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0b132b);
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-    scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0x00f5d4, 1.2);
-    dirLight.position.set(5, 10, 7);
-    scene.add(dirLight);
-
-    const grid = new THREE.GridHelper(50, 50, 0x00f5d4, 0x1c2541);
-    scene.add(grid);
-
-    fetch("https://smartcitybackend-production-9d26.up.railway.app/api/v1/admin/businesses")
-      .then(res => res.json())
-      .then(data => {
-        const list = Array.isArray(data) ? data : (data.businesses || []);
-        list.forEach((item, index) => {
-          const height = 2 + Math.random() * 3;
-          const geo = new THREE.BoxGeometry(1.5, height, 1.5);
-          const mat = new THREE.MeshStandardMaterial({
-            color: index % 2 === 0 ? 0x48cae4 : 0x06d6a0,
-            roughness: 0.3,
-            metalness: 0.8
-          });
-          const building = new THREE.Mesh(geo, mat);
-          building.position.set((index - list.length / 2) * 3, height / 2, -5);
-          scene.add(building);
-        });
-      })
-      .catch(() => {
-        const geo = new THREE.BoxGeometry(2, 2, 2);
-        const mat = new THREE.MeshStandardMaterial({ color: 0x48cae4 });
-        const cube = new THREE.Mesh(geo, mat);
-        cube.position.set(0, 1, -5);
-        scene.add(cube);
-      });
-
-    camera.position.set(0, 3, 5);
-
-    let isDragging = false;
-    let prevX = 0;
-    window.addEventListener('touchstart', (e) => {
-      isDragging = true;
-      prevX = e.touches[0].clientX;
-    });
-    window.addEventListener('touchmove', (e) => {
-      if (!isDragging) return;
-      const deltaX = e.touches[0].clientX - prevX;
-      scene.rotation.y += deltaX * 0.005;
-      prevX = e.touches[0].clientX;
-    });
-    window.addEventListener('touchend', () => { isDragging = false; });
-
-    function animate() {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    }
-    animate();
-  </script>
-</body>
-</html>
-''';
+  double _rotX = 0.6;
+  double _rotY = -0.6;
 
   @override
   void initState() {
     super.initState();
-    _controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setNavigationDelegate(
-        NavigationDelegate(
-          onPageFinished: (_) {
-            if (mounted) setState(() => _isLoading = false);
-          },
+    _fetchBusinesses();
+  }
+
+  Future<void> _fetchBusinesses() async {
+    setState(() => isLoading = true);
+    try {
+      final res = await http.get(Uri.parse("$_baseUrl/api/v1/admin/businesses"));
+      if (res.statusCode == 200) {
+        setState(() {
+          businesses = jsonDecode(res.body);
+          isLoading = false;
+        });
+      } else {
+        throw Exception();
+      }
+    } catch (_) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  void _openStore(dynamic store) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1C2541),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.apartment_rounded, color: Color(0xFF00F5D4), size: 28),
+                const SizedBox(width: 10),
+                Text(
+                  store['name'] ?? 'متجر رقمي',
+                  style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text('القطاع: ${store['category']}', style: const TextStyle(color: Colors.white60, fontSize: 13)),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              height: 46,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00F5D4)),
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const RetailScreen()));
+                },
+                child: const Text('دخول المتجر وتصفح البضائع', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+              ),
+            ),
+          ],
         ),
-      )
-      ..loadHtmlString(_threeJsHtml);
+      ),
+    );
   }
 
   @override
@@ -119,18 +91,114 @@ class _MetaverseScreenState extends State<MetaverseScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
       appBar: AppBar(
-        title: const Text('الميتافيرس والتوأم الرقمي (3D)'),
+        title: const Text('التوأم الرقمي الحي للمدينة'),
         backgroundColor: const Color(0xFF1C2541),
-      ),
-      body: Stack(
-        children: [
-          WebViewWidget(controller: _controller),
-          if (_isLoading)
-            const Center(
-              child: CircularProgressIndicator(color: Color(0xFF00F5D4)),
-            ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh_rounded),
+            onPressed: _fetchBusinesses,
+          ),
         ],
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF00F5D4)))
+          : GestureDetector(
+              onPanUpdate: (details) {
+                setState(() {
+                  _rotY += details.delta.dx * 0.01;
+                  _rotX -= details.delta.dy * 0.01;
+                });
+              },
+              child: Stack(
+                children: [
+                  Center(
+                    child: Transform(
+                      alignment: Alignment.center,
+                      transform: Matrix4.identity()
+                        ..setEntry(3, 2, 0.001)
+                        ..rotateX(_rotX)
+                        ..rotateY(_rotY),
+                      child: Container(
+                        width: 320,
+                        height: 320,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFF00F5D4).withOpacity(0.4), width: 1.5),
+                          borderRadius: BorderRadius.circular(16),
+                          color: const Color(0xFF1C2541).withOpacity(0.3),
+                        ),
+                        child: GridView.builder(
+                          physics: const NeverScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(12),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 3,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 12,
+                          ),
+                          itemCount: businesses.isEmpty ? 1 : businesses.length,
+                          itemBuilder: (ctx, i) {
+                            if (businesses.isEmpty) {
+                              return const Center(
+                                child: Text('لا توجد منشآت', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                              );
+                            }
+                            final b = businesses[i];
+                            return InkWell(
+                              onTap: () => _openStore(b),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF00F5D4).withOpacity(0.2),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: const Color(0xFF00F5D4)),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Icon(Icons.storefront_rounded, color: Color(0xFF00F5D4), size: 28),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      b['name'] ?? '',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                  Positioned(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1C2541).withOpacity(0.85),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white10),
+                      ),
+                      child: const Row(
+                        children: [
+                          Icon(Icons.touch_app_rounded, color: Color(0xFF00F5D4), size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'اسحب بإصبعك لتدوير المشهد ثلاثي الأبعاد، واضغط على أي مبنى للتفاعل معه.',
+                              style: TextStyle(color: Colors.white70, fontSize: 11),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
     );
   }
 }
