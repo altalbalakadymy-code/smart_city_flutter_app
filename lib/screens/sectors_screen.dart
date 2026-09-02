@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'metaverse_screen.dart';
 import 'healthcare_screen.dart';
 import 'transport_screen.dart';
+import 'retail_screen.dart';
 
 class SectorsScreen extends StatelessWidget {
   const SectorsScreen({super.key});
@@ -109,6 +110,11 @@ class SectorsScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const TransportScreen()),
+                  );
+                } else if (s['category'] == 'retail') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RetailScreen()),
                   );
                 }
               },
