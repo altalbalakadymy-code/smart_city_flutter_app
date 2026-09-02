@@ -99,7 +99,7 @@ class _QatVendorDashboardState extends State<QatVendorDashboard> {
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
       appBar: AppBar(
-        title: Text('لوحة البائع: ${widget.vendorUser['full_name']}'),
+        title: Text('لوحة البائع: ${widget.vendorUser['full_name'] ?? 'بائع القات'}'),
         backgroundColor: const Color(0xFF1C2541),
         actions: [
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _fetchOrders),
