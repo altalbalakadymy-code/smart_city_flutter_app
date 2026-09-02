@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
-import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SmartCitySuperApp());
+  runApp(const SmartCityApp());
 }
 
-class SmartCitySuperApp extends StatelessWidget {
-  const SmartCitySuperApp({super.key});
+class SmartCityApp extends StatelessWidget {
+  const SmartCityApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart City Metaverse',
+      title: 'Smart City Super App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        brightness: Brightness.dark,
-        primaryColor: const Color(0xFF1C2541),
-        scaffoldBackgroundColor: const Color(0xFF0B132B),
         fontFamily: 'Roboto',
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF0B132B),
       ),
-      home: const HomeScreen(),
+      home: const LoginScreen(),
     );
   }
 }
