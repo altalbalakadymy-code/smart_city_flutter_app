@@ -6,6 +6,7 @@ import 'login_screen.dart';
 import 'transport_screen.dart';
 import 'tourism_screen.dart';
 import 'qat_market_screen.dart';
+import 'notifications_screen.dart';
 
 class SectorsScreen extends StatelessWidget {
   final Map<String, dynamic> currentUser;
@@ -57,6 +58,17 @@ class SectorsScreen extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFF1C2541),
         actions: [
+          // جرس الإشعارات والتنبيهات
+          IconButton(
+            tooltip: 'الإشعارات والتنبيهات',
+            icon: const Icon(Icons.notifications_outlined, color: Color(0xFFFFB703)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => NotificationsScreen(currentUser: currentUser)),
+              );
+            },
+          ),
           if (isDriver)
             IconButton(
               tooltip: 'لوحة مهام سائق الوايت',
@@ -155,7 +167,7 @@ class SectorsScreen extends StatelessWidget {
   }
 }
 
-// ----------------- واجهة طلب وايت الماء للمواطن -----------------
+// ----------------- واجهة طلب وايت الماء -----------------
 class EmbeddedWaterTankerScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
   const EmbeddedWaterTankerScreen({super.key, this.currentUser});
