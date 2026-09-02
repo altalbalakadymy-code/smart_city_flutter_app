@@ -160,7 +160,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: const Column(
                   children: [
-                    Text('بيانات الدخول التجريبية:', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text('بيانات الدخول السريعة:', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                     SizedBox(height: 4),
                     Text('المدير: ADMIN-01 | السر: admin123', style: TextStyle(color: Color(0xFF00F5D4), fontSize: 11)),
                     Text('المواطن: USER-01 | السر: user123', style: TextStyle(color: Colors.white54, fontSize: 11)),
