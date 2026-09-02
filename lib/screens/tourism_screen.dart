@@ -1,34 +1,74 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class TourismScreen extends StatelessWidget {
-  const TourismScreen({super.key});
+class TourismScreen extends StatefulWidget {
+  final Map<String, dynamic>? currentUser;
 
-  final List<Map<String, dynamic>> attractions = const [
-    {
-      'title': 'برج واحة الابتكار والميتافيرس',
-      'category': 'معالم ذكية',
-      'rating': 4.9,
-      'time': 'مفتوح 24/7',
-      'icon': Icons.location_city_rounded,
-      'color': Color(0xFFFB5607),
-    },
-    {
-      'title': 'ممشى الحديقة البيئية المعلقة',
-      'category': 'طبيعة وترفيه',
-      'rating': 4.8,
-      'time': '06:00 ص - 11:00 م',
-      'icon': Icons.park_rounded,
-      'color': Color(0xFF06D6A0),
-    },
-    {
-      'title': 'مسرح الفنون الرقمية والهولوجرام',
-      'category': 'عروض حية',
-      'rating': 4.9,
-      'time': 'تبدأ العروض 08:00 م',
-      'icon': Icons.theater_comedy_rounded,
-      'color': Color(0xFF8338EC),
-    },
-  ];
+  const TourismScreen({super.key, this.currentUser});
+
+  @override
+  State<TourismScreen> createState() => _TourismScreenState();
+}
+
+class _TourismScreenState extends State<TourismScreen> {
+  final String _baseUrl = "https://smartcitybackend-production-9d26.up.railway.app";
+  List<dynamic> spots = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchSpots();
+  }
+
+  Future<void> _fetchSpots() async {
+    setState(() => isLoading = true);
+    try {
+      final res = await http.get(Uri.parse("$_baseUrl/api/v1/tourism/destinations"));
+      if (res.statusCode == 200) {
+        setState(() {
+          spots = jsonDecode(res.body);
+          isLoading = false;
+        });
+      }
+    } catch (_) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _bookSpot(dynamic s) async {
+    final userId = widget.currentUser?['id'] ?? 1;
+    final gName = widget.currentUser?['full_name'] ?? 'مواطن ذكي';
+
+    try {
+      final res = await http.post(
+        Uri.parse("$_baseUrl/api/v1/tourism/book"),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "user_id": userId,
+          "guest_name": gName,
+          "destination_title": s['title'],
+          "price": s['price'],
+        }),
+      );
+
+      if (res.statusCode == 200) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('تم تأكيد حجزك في ${s['title']} بنجاح 🌴'),
+            backgroundColor: const Color(0xFF06D6A0),
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('تعذر إتمام الحجز السياحي'), backgroundColor: Color(0xFFFF5964)),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,114 +77,51 @@ class TourismScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('السياحة والضيافة والترفيه'),
         backgroundColor: const Color(0xFF1C2541),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF1C2541), Color(0xFF0B132B)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: const Color(0xFFFB5607).withOpacity(0.4)),
-            ),
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Column(
-                  children: [
-                    Icon(Icons.hotel_rounded, color: Color(0xFFFB5607), size: 28),
-                    SizedBox(height: 6),
-                    Text('الفنادق الذكية', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    Text('18 فندق', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Icon(Icons.attractions_rounded, color: Color(0xFF00F5D4), size: 28),
-                    SizedBox(height: 6),
-                    Text('الفعاليات الحية', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    Text('12 فعالية', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                  ],
-                ),
-                Column(
-                  children: [
-                    Icon(Icons.restaurant_rounded, color: Color(0xFFFFB703), size: 28),
-                    SizedBox(height: 6),
-                    Text('المطاعم والكافيهات', style: TextStyle(color: Colors.white70, fontSize: 12)),
-                    Text('64 وجهة', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'أبرز الوجهات والفعاليات في المدينة',
-            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          ...attractions.map((a) => Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF1C2541),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: (a['color'] as Color).withOpacity(0.25)),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 24,
-                      backgroundColor: (a['color'] as Color).withOpacity(0.15),
-                      child: Icon(a['icon'], color: a['color']),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(a['title'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${a['category']} • ${a['time']}',
-                            style: const TextStyle(color: Colors.white70, fontSize: 11),
-                          ),
-                          const SizedBox(height: 4),
-                          Row(
-                            children: [
-                              const Icon(Icons.star, color: Color(0xFFFFB703), size: 14),
-                              const SizedBox(width: 4),
-                              Text('${a['rating']}', style: const TextStyle(color: Colors.white, fontSize: 12)),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFFB5607),
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      ),
-                      onPressed: () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('تم فتح الدليل السياحي وحجز مسار الزيارة لـ ${a['title']}'),
-                            backgroundColor: const Color(0xFFFB5607),
-                          ),
-                        );
-                      },
-                      child: const Text('استكشاف', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)),
-                    ),
-                  ],
-                ),
-              )),
+        actions: [
+          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _fetchSpots),
         ],
       ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFFB5607)))
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: spots.length,
+              itemBuilder: (ctx, i) {
+                final s = spots[i];
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 14),
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF1C2541),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFB5607).withOpacity(0.35)),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(s['title'], style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text(s['rating'], style: const TextStyle(color: Color(0xFFFFB703), fontWeight: FontWeight.bold)),
+                        ],
+                      ),
+                      const SizedBox(height: 6),
+                      Text('النوع: ${s['type']} • السعر للشخص: \$${s['price']}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                      const SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFB5607)),
+                          onPressed: () => _bookSpot(s),
+                          child: const Text('حجز فوري', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
     );
   }
 }
