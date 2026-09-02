@@ -58,7 +58,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     }
   }
 
-  // إضافة متجر جديد
   void _showAddBusinessDialog() {
     final nameCtrl = TextEditingController();
     String selectedCategory = 'retail';
@@ -130,13 +129,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
-  // حذف متجر
   Future<void> _deleteBusiness(int id) async {
     await http.delete(Uri.parse("$_baseUrl/api/v1/admin/businesses/$id"));
     _fetchAllData();
   }
 
-  // تعديل حالة المستخدم (تجميد / تنشيط)
   Future<void> _toggleUserStatus(int id, String currentStatus) async {
     final nextStatus = currentStatus == 'موثق' ? 'موقوف' : 'موثق';
     await http.patch(
@@ -147,7 +144,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     _fetchAllData();
   }
 
-  // معالجة بلاغ
   Future<void> _resolveReport(int id) async {
     await http.patch(
       Uri.parse("$_baseUrl/api/v1/admin/reports/$id"),
@@ -197,13 +193,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           : TabBarView(
               controller: _tabController,
               children: [
-                // 1. تبويب المتاجر
                 _buildBusinessesTab(),
-                // 2. تبويب المواطنين
                 _buildUsersTab(),
-                // 3. تبويب بلاغات المرافق
                 _buildReportsTab(),
-                // 4. تبويب الحجوزات الطبية
                 _buildAppointmentsTab(),
               ],
             ),
@@ -286,7 +278,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   children: [
                     Text(u['full_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                     const SizedBox(height: 4),
-                    Text('الهوية: ${u['national_id']} • رصيد: \$${u['wallet_balance']}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text('الهوية: ${u['national_id']} • الهاتف: ${u['phone'] ?? 'غير مسجل'}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   ],
                 ),
               ),
