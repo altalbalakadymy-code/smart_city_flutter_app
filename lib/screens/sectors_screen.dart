@@ -5,6 +5,7 @@ import 'transport_screen.dart';
 import 'retail_screen.dart';
 import 'utilities_screen.dart';
 import 'education_screen.dart';
+import 'governance_screen.dart';
 
 class SectorsScreen extends StatelessWidget {
   const SectorsScreen({super.key});
@@ -127,6 +128,11 @@ class SectorsScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (_) => const EducationScreen()),
+                  );
+                } else if (s['category'] == 'governance') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const GovernanceScreen()),
                   );
                 }
               },
