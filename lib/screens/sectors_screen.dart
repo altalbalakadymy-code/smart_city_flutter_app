@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'metaverse_screen.dart';
 
 class SectorsScreen extends StatelessWidget {
   const SectorsScreen({super.key});
@@ -65,7 +66,7 @@ class SectorsScreen extends StatelessWidget {
       'category': 'metaverse',
       'icon': Icons.view_in_ar_outlined,
       'color': Color(0xFF00F5D4),
-      'desc': 'عالم Unity ثلاثي الأبعاد، التجول الافتراضي، وتزامن WebSocket.'
+      'desc': 'عالم تفاعلي ثلاثي الأبعاد، استكشاف المتاجر الحية، وتدوير المشهد باللمس.'
     },
   ];
 
@@ -88,41 +89,55 @@ class SectorsScreen extends StatelessWidget {
         itemCount: sectors.length,
         itemBuilder: (context, index) {
           final s = sectors[index];
-          return Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: const Color(0xFF1C2541),
+          return Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                if (s['category'] == 'metaverse') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MetaverseScreen()),
+                  );
+                }
+              },
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: (s['color'] as Color).withOpacity(0.3)),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  backgroundColor: (s['color'] as Color).withOpacity(0.15),
-                  child: Icon(s['icon'], color: s['color']),
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1C2541),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: (s['color'] as Color).withOpacity(0.3)),
                 ),
-                const Spacer(),
-                Text(
-                  s['title'],
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: (s['color'] as Color).withOpacity(0.15),
+                      child: Icon(s['icon'], color: s['color']),
+                    ),
+                    const Spacer(),
+                    Text(
+                      s['title'],
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      s['desc'],
+                      style: TextStyle(
+                        color: Colors.white.withOpacity(0.55),
+                        fontSize: 11,
+                        height: 1.2,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  s['desc'],
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.55),
-                    fontSize: 11,
-                    height: 1.2,
-                  ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+              ),
             ),
           );
         },
