@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'sectors_screen.dart';
+import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -126,7 +127,20 @@ class _LoginScreenState extends State<LoginScreen> {
                       : const Text('تسجيل الدخول', style: TextStyle(color: Color(0xFF0B132B), fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                  );
+                },
+                child: const Text(
+                  'ليس لديك هوية رقمية؟ تسجيل حساب جديد',
+                  style: TextStyle(color: Color(0xFF00F5D4), fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -135,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: const Column(
                   children: [
-                    Text('بيانات الدخول التجريبية:', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+                    Text('بيانات الدخول السريعة:', style: TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
                     SizedBox(height: 4),
                     Text('المدير: ADMIN-01 | السر: admin123', style: TextStyle(color: Color(0xFF00F5D4), fontSize: 11)),
                     Text('المواطن: USER-01 | السر: user123', style: TextStyle(color: Colors.white54, fontSize: 11)),
