@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
+import 'merchant_dashboard_screen.dart';
 import 'login_screen.dart';
 import 'metaverse_screen.dart';
 import 'healthcare_screen.dart';
@@ -85,6 +86,7 @@ class SectorsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isAdmin = currentUser['role'] == 'admin';
+    final bool isMerchant = currentUser['role'] == 'merchant';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
@@ -95,6 +97,19 @@ class SectorsScreen extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFF1C2541),
         actions: [
+          if (isMerchant)
+            IconButton(
+              tooltip: 'لوحة إدارة المتجر والمنتجات',
+              icon: const Icon(Icons.storefront_rounded, color: Color(0xFFFFB703)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MerchantDashboardScreen(merchantUser: currentUser),
+                  ),
+                );
+              },
+            ),
           if (isAdmin)
             IconButton(
               tooltip: 'مركز قيادة المدينة',
