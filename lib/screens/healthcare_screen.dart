@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class HealthcareScreen extends StatefulWidget {
   const HealthcareScreen({super.key});
@@ -47,14 +49,14 @@ class _HealthcareScreenState extends State<HealthcareScreen> {
     },
   ];
 
-  void _bookAppointment(String clinicName, String doctor) {
+  Future<void> _bookAppointment(String clinicName, String doctor) async {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1C2541),
         title: const Text('تأكيد الحجز الذكي', style: TextStyle(color: Color(0xFF00F5D4))),
         content: Text(
-          'هل ترغب في تأكيد حجز موعد فوري لدى $doctor في $clinicName؟',
+          'هل ترغب في حفظ وتأكيد موعدك لدى $doctor في $clinicName بقاعدة البيانات السحابية؟',
           style: const TextStyle(color: Colors.white70),
         ),
         actions: [
@@ -64,14 +66,37 @@ class _HealthcareScreenState extends State<HealthcareScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06D6A0)),
-            onPressed: () {
+            onPressed: () async {
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('تم حجز موعدك بنجاح مع $doctor'),
-                  backgroundColor: const Color(0xFF06D6A0),
-                ),
-              );
+              final url = Uri.parse("https://smartcitybackend-production-9d26.up.railway.app/api/v1/health/book");
+              try {
+                final response = await http.post(
+                  url,
+                  headers: {"Content-Type": "application/json"},
+                  body: jsonEncode({
+                    "clinic_name": clinicName,
+                    "doctor_name": doctor,
+                    "patient_name": "مواطن المدينة الذكية",
+                  }),
+                );
+                if (response.statusCode == 200) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('تم توثيق الحجز بنجاح مع $doctor في السيرفر 🩺'),
+                      backgroundColor: const Color(0xFF06D6A0),
+                    ),
+                  );
+                } else {
+                  throw Exception();
+                }
+              } catch (_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('تعذر الحفظ في قاعدة البيانات، تحقق من السيرفر'),
+                    backgroundColor: Color(0xFFFF5964),
+                  ),
+                );
+              }
             },
             child: const Text('تأكيد الحجز', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
           ),
@@ -91,7 +116,6 @@ class _HealthcareScreenState extends State<HealthcareScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // لوحة مؤشرات صحة المدينة
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -165,7 +189,7 @@ class _HealthcareScreenState extends State<HealthcareScreen> {
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            c['doctor'] + ' - ' + c['specialty'],
+                            '${c['doctor']} - ${c['specialty']}',
                             style: const TextStyle(color: Colors.white70, fontSize: 12),
                           ),
                           const SizedBox(height: 6),
