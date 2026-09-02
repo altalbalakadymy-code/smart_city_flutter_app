@@ -47,14 +47,6 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       }
     } catch (_) {
       setState(() => isLoading = false);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('تعذر تحميل بيانات اللوحة من السحابة'),
-            backgroundColor: Color(0xFFFF5964),
-          ),
-        );
-      }
     }
   }
 
@@ -128,7 +120,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                   controller: pwdCtrl,
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    labelText: 'كلمة المرور المؤقتة للتاجر',
+                    labelText: 'كلمة المرور المؤقتة',
                     labelStyle: const TextStyle(color: Colors.white60),
                     filled: true,
                     fillColor: const Color(0xFF0B132B),
@@ -197,6 +189,115 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     );
   }
 
+  void _showAddClinicDialog() {
+    final docInChargeCtrl = TextEditingController();
+    final cNameCtrl = TextEditingController();
+    final idCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    final pwdCtrl = TextEditingController(text: "123456");
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1C2541),
+        title: const Text('إصدار ترخيص وعيادة جديدة', style: TextStyle(color: Color(0xFF06D6A0), fontSize: 16)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: docInChargeCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'اسم الطبيب المسؤول / المدير الطبي',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: const Color(0xFF0B132B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: cNameCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'اسم العيادة أو المركز الطبي',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: const Color(0xFF0B132B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: idCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'رقم الهوية الطبية (مثال: MED-101)',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: const Color(0xFF0B132B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: phoneCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'هاتف العيادة',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: const Color(0xFF0B132B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: pwdCtrl,
+                style: const TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  labelText: 'كلمة مرور حساب العيادة',
+                  labelStyle: const TextStyle(color: Colors.white60),
+                  filled: true,
+                  fillColor: const Color(0xFF0B132B),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(color: Colors.white54))),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06D6A0)),
+            onPressed: () async {
+              final dName = docInChargeCtrl.text.trim();
+              final cName = cNameCtrl.text.trim();
+              final id = idCtrl.text.trim();
+              if (dName.isEmpty || cName.isEmpty || id.isEmpty) return;
+              Navigator.pop(ctx);
+
+              await http.post(
+                Uri.parse("$_baseUrl/api/v1/admin/clinics"),
+                headers: {"Content-Type": "application/json"},
+                body: jsonEncode({
+                  "doctor_in_charge": dName,
+                  "clinic_name": cName,
+                  "national_id": id,
+                  "phone": phoneCtrl.text.trim(),
+                  "password": pwdCtrl.text.trim(),
+                }),
+              );
+              _fetchAllData();
+            },
+            child: const Text('اعتماد المنشأة الطبية', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _deleteBusiness(int id) async {
     await http.delete(Uri.parse("$_baseUrl/api/v1/admin/businesses/$id"));
     _fetchAllData();
@@ -241,7 +342,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           labelColor: const Color(0xFF00F5D4),
           unselectedLabelColor: Colors.white60,
           tabs: [
-            Tab(text: 'المتاجر (${businesses.length})', icon: const Icon(Icons.store_rounded)),
+            Tab(text: 'المتاجر والمنشآت (${businesses.length})', icon: const Icon(Icons.store_rounded)),
             Tab(text: 'المواطنون (${users.length})', icon: const Icon(Icons.people_alt_rounded)),
             Tab(text: 'طوارئ المرافق (${reports.length})', icon: const Icon(Icons.report_gmailerrorred_rounded)),
             Tab(text: 'الحجوزات الطبية (${appointments.length})', icon: const Icon(Icons.medical_services_rounded)),
@@ -249,11 +350,25 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         ),
       ),
       floatingActionButton: _tabController.index == 0
-          ? FloatingActionButton.extended(
-              backgroundColor: const Color(0xFF00F5D4),
-              onPressed: _showAddMerchantDialog,
-              icon: const Icon(Icons.add_business_rounded, color: Color(0xFF0B132B)),
-              label: const Text('اعتماد تاجر جديد', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+          ? Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FloatingActionButton.extended(
+                  heroTag: 'btn1',
+                  backgroundColor: const Color(0xFF06D6A0),
+                  onPressed: _showAddClinicDialog,
+                  icon: const Icon(Icons.local_hospital_rounded, color: Color(0xFF0B132B)),
+                  label: const Text('اعتماد عيادة', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(width: 10),
+                FloatingActionButton.extended(
+                  heroTag: 'btn2',
+                  backgroundColor: const Color(0xFF00F5D4),
+                  onPressed: _showAddMerchantDialog,
+                  icon: const Icon(Icons.add_business_rounded, color: Color(0xFF0B132B)),
+                  label: const Text('اعتماد تاجر', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+                ),
+              ],
             )
           : null,
       body: isLoading
@@ -272,26 +387,31 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
   Widget _buildBusinessesTab() {
     if (businesses.isEmpty) {
-      return const Center(child: Text('لا توجد متاجر مسجلة', style: TextStyle(color: Colors.white54)));
+      return const Center(child: Text('لا توجد منشآت مسجلة', style: TextStyle(color: Colors.white54)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       itemCount: businesses.length,
       itemBuilder: (ctx, i) {
         final b = businesses[i];
+        final isHealthcare = b['category'] == 'healthcare';
+
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: const Color(0xFF1C2541),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF00F5D4).withOpacity(0.3)),
+            border: Border.all(color: (isHealthcare ? const Color(0xFF06D6A0) : const Color(0xFF00F5D4)).withOpacity(0.3)),
           ),
           child: Row(
             children: [
-              const CircleAvatar(
-                backgroundColor: Color(0x2200F5D4),
-                child: Icon(Icons.store_mall_directory_rounded, color: Color(0xFF00F5D4)),
+              CircleAvatar(
+                backgroundColor: (isHealthcare ? const Color(0xFF06D6A0) : const Color(0xFF00F5D4)).withOpacity(0.15),
+                child: Icon(
+                  isHealthcare ? Icons.local_hospital_rounded : Icons.store_mall_directory_rounded,
+                  color: isHealthcare ? const Color(0xFF06D6A0) : const Color(0xFF00F5D4),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -327,6 +447,11 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
         final isActive = u['status'] == 'موثق';
         final role = u['role'] ?? 'user';
         final isMerchant = role == 'merchant';
+        final isClinic = role == 'clinic';
+
+        Color roleColor = const Color(0xFF00F5D4);
+        if (isMerchant) roleColor = const Color(0xFFFFB703);
+        if (isClinic) roleColor = const Color(0xFF06D6A0);
 
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
@@ -334,18 +459,15 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           decoration: BoxDecoration(
             color: const Color(0xFF1C2541),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: isMerchant ? const Color(0xFFFFB703) : (isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964)),
-              width: 0.8,
-            ),
+            border: Border.all(color: isActive ? roleColor.withOpacity(0.5) : const Color(0xFFFF5964), width: 0.8),
           ),
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: (isMerchant ? const Color(0xFFFFB703) : (isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964))).withOpacity(0.2),
+                backgroundColor: roleColor.withOpacity(0.2),
                 child: Icon(
-                  isMerchant ? Icons.storefront : Icons.person,
-                  color: isMerchant ? const Color(0xFFFFB703) : (isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964)),
+                  isClinic ? Icons.local_hospital : (isMerchant ? Icons.storefront : Icons.person),
+                  color: roleColor,
                 ),
               ),
               const SizedBox(width: 12),
@@ -357,18 +479,21 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                       children: [
                         Text(u['full_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                         const SizedBox(width: 8),
-                        if (isMerchant)
+                        if (role != 'user')
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(color: const Color(0xFFFFB703).withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
-                            child: const Text('تاجر', style: TextStyle(color: Color(0xFFFFB703), fontSize: 10, fontWeight: FontWeight.bold)),
+                            decoration: BoxDecoration(color: roleColor.withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
+                            child: Text(
+                              isClinic ? 'عيادة' : (isMerchant ? 'تاجر' : 'مدير'),
+                              style: TextStyle(color: roleColor, fontSize: 10, fontWeight: FontWeight.bold),
+                            ),
                           ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Text('الهوية: ${u['national_id']} • الهاتف: ${u['phone'] ?? 'غير مسجل'}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                     if (u['business_name'] != null)
-                      Text('المنشأة: ${u['business_name']}', style: const TextStyle(color: Color(0xFF00F5D4), fontSize: 11)),
+                      Text('المنشأة: ${u['business_name']}', style: TextStyle(color: roleColor, fontSize: 11)),
                   ],
                 ),
               ),
@@ -449,13 +574,13 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
           decoration: BoxDecoration(
             color: const Color(0xFF1C2541),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFF00F5D4).withOpacity(0.2)),
+            border: Border.all(color: const Color(0xFF06D6A0).withOpacity(0.3)),
           ),
           child: Row(
             children: [
               const CircleAvatar(
-                backgroundColor: Color(0x2200F5D4),
-                child: Icon(Icons.local_hospital_rounded, color: Color(0xFF00F5D4)),
+                backgroundColor: Color(0x2206D6A0),
+                child: Icon(Icons.local_hospital_rounded, color: Color(0xFF06D6A0)),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -466,6 +591,17 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                     const SizedBox(height: 4),
                     Text('${a['clinic_name']} - ${a['doctor_name']}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                   ],
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF06D6A0).withOpacity(0.15),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  a['status'] ?? 'مؤكد',
+                  style: const TextStyle(color: Color(0xFF06D6A0), fontSize: 11, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
