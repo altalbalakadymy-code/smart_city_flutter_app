@@ -58,8 +58,12 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
     }
   }
 
-  void _showAddBusinessDialog() {
-    final nameCtrl = TextEditingController();
+  void _showAddMerchantDialog() {
+    final mNameCtrl = TextEditingController();
+    final bNameCtrl = TextEditingController();
+    final idCtrl = TextEditingController();
+    final phoneCtrl = TextEditingController();
+    final pwdCtrl = TextEditingController(text: "123456");
     String selectedCategory = 'retail';
 
     showDialog(
@@ -67,41 +71,94 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       builder: (ctx) => StatefulBuilder(
         builder: (context, setDState) => AlertDialog(
           backgroundColor: const Color(0xFF1C2541),
-          title: const Text('تسجيل متجر في السيرفر والميتافيرس', style: TextStyle(color: Color(0xFF00F5D4), fontSize: 16)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameCtrl,
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  hintText: 'اسم المتجر أو المنشأة...',
-                  hintStyle: const TextStyle(color: Colors.white38),
-                  filled: true,
-                  fillColor: const Color(0xFF0B132B),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+          title: const Text('إصدار ترخيص وحساب تاجر جديد', style: TextStyle(color: Color(0xFF00F5D4), fontSize: 16)),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: mNameCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'اسم مالك المتجر / التاجر',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF0B132B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                dropdownColor: const Color(0xFF1C2541),
-                style: const TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFF0B132B),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: bNameCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'اسم المنشأة / المتجر',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF0B132B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
                 ),
-                items: const [
-                  DropdownMenuItem(value: 'retail', child: Text('متاجر وتسوق')),
-                  DropdownMenuItem(value: 'tech', child: Text('تقنية وميتافيرس')),
-                  DropdownMenuItem(value: 'cafe', child: Text('مطاعم ومقاهي')),
-                ],
-                onChanged: (val) {
-                  if (val != null) setDState(() => selectedCategory = val);
-                },
-              ),
-            ],
+                const SizedBox(height: 10),
+                TextField(
+                  controller: idCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'رقم هوية التاجر (مثال: M-101)',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF0B132B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: phoneCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'رقم هاتف المنشأة',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF0B132B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: pwdCtrl,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'كلمة المرور المؤقتة للتاجر',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF0B132B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                DropdownButtonFormField<String>(
+                  value: selectedCategory,
+                  dropdownColor: const Color(0xFF1C2541),
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'تصنيف النشاط',
+                    labelStyle: const TextStyle(color: Colors.white60),
+                    filled: true,
+                    fillColor: const Color(0xFF0B132B),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'retail', child: Text('متاجر وتجزئة')),
+                    DropdownMenuItem(value: 'tech', child: Text('تقنية وابتكار')),
+                    DropdownMenuItem(value: 'cafe', child: Text('مطاعم ومقاهي')),
+                    DropdownMenuItem(value: 'services', child: Text('خدمات عامة')),
+                  ],
+                  onChanged: (val) {
+                    if (val != null) setDState(() => selectedCategory = val);
+                  },
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(
@@ -111,17 +168,28 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
             ElevatedButton(
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00F5D4)),
               onPressed: () async {
-                final name = nameCtrl.text.trim();
-                if (name.isEmpty) return;
+                final mName = mNameCtrl.text.trim();
+                final bName = bNameCtrl.text.trim();
+                final id = idCtrl.text.trim();
+                final pwd = pwdCtrl.text.trim();
+                if (mName.isEmpty || bName.isEmpty || id.isEmpty || pwd.isEmpty) return;
                 Navigator.pop(ctx);
+
                 await http.post(
-                  Uri.parse("$_baseUrl/api/v1/admin/businesses"),
+                  Uri.parse("$_baseUrl/api/v1/admin/merchants"),
                   headers: {"Content-Type": "application/json"},
-                  body: jsonEncode({"name": name, "category": selectedCategory}),
+                  body: jsonEncode({
+                    "merchant_name": mName,
+                    "business_name": bName,
+                    "category": selectedCategory,
+                    "national_id": id,
+                    "phone": phoneCtrl.text.trim(),
+                    "password": pwd,
+                  }),
                 );
                 _fetchAllData();
               },
-              child: const Text('إضافة وتأكيد', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+              child: const Text('اعتماد وإصدار الحساب', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
             ),
           ],
         ),
@@ -183,9 +251,9 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       floatingActionButton: _tabController.index == 0
           ? FloatingActionButton.extended(
               backgroundColor: const Color(0xFF00F5D4),
-              onPressed: _showAddBusinessDialog,
+              onPressed: _showAddMerchantDialog,
               icon: const Icon(Icons.add_business_rounded, color: Color(0xFF0B132B)),
-              label: const Text('إضافة متجر', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
+              label: const Text('اعتماد تاجر جديد', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
             )
           : null,
       body: isLoading
@@ -249,7 +317,7 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
 
   Widget _buildUsersTab() {
     if (users.isEmpty) {
-      return const Center(child: Text('لا يوجد مواطنون مسجلون', style: TextStyle(color: Colors.white54)));
+      return const Center(child: Text('لا يوجد مستخدمون مسجلون', style: TextStyle(color: Colors.white54)));
     }
     return ListView.builder(
       padding: const EdgeInsets.all(16),
@@ -257,28 +325,50 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       itemBuilder: (ctx, i) {
         final u = users[i];
         final isActive = u['status'] == 'موثق';
+        final role = u['role'] ?? 'user';
+        final isMerchant = role == 'merchant';
+
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
             color: const Color(0xFF1C2541),
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964), width: 0.8),
+            border: Border.all(
+              color: isMerchant ? const Color(0xFFFFB703) : (isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964)),
+              width: 0.8,
+            ),
           ),
           child: Row(
             children: [
               CircleAvatar(
-                backgroundColor: (isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964)).withOpacity(0.2),
-                child: Icon(Icons.person, color: isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964)),
+                backgroundColor: (isMerchant ? const Color(0xFFFFB703) : (isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964))).withOpacity(0.2),
+                child: Icon(
+                  isMerchant ? Icons.storefront : Icons.person,
+                  color: isMerchant ? const Color(0xFFFFB703) : (isActive ? const Color(0xFF06D6A0) : const Color(0xFFFF5964)),
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(u['full_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                    Row(
+                      children: [
+                        Text(u['full_name'] ?? '', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                        const SizedBox(width: 8),
+                        if (isMerchant)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: const Color(0xFFFFB703).withOpacity(0.2), borderRadius: BorderRadius.circular(4)),
+                            child: const Text('تاجر', style: TextStyle(color: Color(0xFFFFB703), fontSize: 10, fontWeight: FontWeight.bold)),
+                          ),
+                      ],
+                    ),
                     const SizedBox(height: 4),
                     Text('الهوية: ${u['national_id']} • الهاتف: ${u['phone'] ?? 'غير مسجل'}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                    if (u['business_name'] != null)
+                      Text('المنشأة: ${u['business_name']}', style: const TextStyle(color: Color(0xFF00F5D4), fontSize: 11)),
                   ],
                 ),
               ),
