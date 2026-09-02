@@ -111,12 +111,25 @@ class _QatMarketScreenState extends State<QatMarketScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isVendor = widget.currentUser?['role'] == 'qat_vendor';
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
       appBar: AppBar(
         title: const Text('سوق القات الذكي المعتمد'),
         backgroundColor: const Color(0xFF1C2541),
         actions: [
+          if (isVendor)
+            IconButton(
+              tooltip: 'لوحة إدارة طلباتي وبضاعتي',
+              icon: const Icon(Icons.storefront_rounded, color: Color(0xFF06D6A0)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => EmbeddedQatVendorDashboard(vendorUser: widget.currentUser!)),
+                );
+              },
+            ),
           IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _fetchMarket),
         ],
       ),
@@ -165,6 +178,115 @@ class _QatMarketScreenState extends State<QatMarketScreen> {
                 );
               },
             ),
+    );
+  }
+}
+
+// ----------------- لوحة تحكم بائع القات المدمجة -----------------
+class EmbeddedQatVendorDashboard extends StatefulWidget {
+  final Map<String, dynamic> vendorUser;
+  const EmbeddedQatVendorDashboard({super.key, required this.vendorUser});
+
+  @override
+  State<EmbeddedQatVendorDashboard> createState() => _EmbeddedQatVendorDashboardState();
+}
+
+class _EmbeddedQatVendorDashboardState extends State<EmbeddedQatVendorDashboard> {
+  final String _baseUrl = "https://smartcitybackend-production-9d26.up.railway.app";
+  List<dynamic> orders = [];
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchOrders();
+  }
+
+  Future<void> _fetchOrders() async {
+    setState(() => isLoading = true);
+    try {
+      final res = await http.get(Uri.parse("$_baseUrl/api/v1/vendor/qat-orders"));
+      if (res.statusCode == 200) {
+        setState(() {
+          orders = jsonDecode(res.body);
+          isLoading = false;
+        });
+      }
+    } catch (_) {
+      setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _updateStatus(int orderId, String nextStatus) async {
+    await http.patch(
+      Uri.parse("$_baseUrl/api/v1/vendor/qat-orders/$orderId"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"status": nextStatus}),
+    );
+    _fetchOrders();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B132B),
+      appBar: AppBar(
+        title: Text('لوحة البائع: ${widget.vendorUser['full_name'] ?? 'بائع القات'}'),
+        backgroundColor: const Color(0xFF1C2541),
+        actions: [
+          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _fetchOrders),
+        ],
+      ),
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF06D6A0)))
+          : orders.isEmpty
+              ? const Center(child: Text('لا توجد طلبات مقايل حالياً', style: TextStyle(color: Colors.white54)))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: orders.length,
+                  itemBuilder: (ctx, i) {
+                    final o = orders[i];
+                    final isDelivered = o['status'] == 'تم التوصيل للمقيل';
+
+                    return Container(
+                      margin: const EdgeInsets.only(bottom: 14),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1C2541),
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: isDelivered ? Colors.white24 : const Color(0xFF06D6A0).withOpacity(0.4)),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(o['citizen_name'] ?? 'مشتري', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                              Text('\$${o['total_price']}', style: const TextStyle(color: Color(0xFFFFB703), fontWeight: FontWeight.bold, fontSize: 16)),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text('الصنف: ${o['qat_type']}', style: const TextStyle(color: Color(0xFF06D6A0), fontSize: 13, fontWeight: FontWeight.bold)),
+                          Text('عنوان المقيل: ${o['delivery_address']}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                          const SizedBox(height: 12),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text('الحالة: ${o['status']}', style: TextStyle(color: isDelivered ? const Color(0xFF06D6A0) : const Color(0xFFFFB703), fontWeight: FontWeight.bold, fontSize: 12)),
+                              if (!isDelivered)
+                                ElevatedButton(
+                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF06D6A0)),
+                                  onPressed: () => _updateStatus(o['id'], 'تم التوصيل للمقيل'),
+                                  child: const Text('تأكيد التوصيل', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold, fontSize: 12)),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
     );
   }
 }
