@@ -6,6 +6,8 @@ import 'retail_screen.dart';
 import 'utilities_screen.dart';
 import 'education_screen.dart';
 import 'governance_screen.dart';
+import 'safety_screen.dart';
+import 'tourism_screen.dart';
 
 class SectorsScreen extends StatelessWidget {
   const SectorsScreen({super.key});
@@ -99,42 +101,37 @@ class SectorsScreen extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               onTap: () {
-                if (s['category'] == 'metaverse') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const MetaverseScreen()),
-                  );
-                } else if (s['category'] == 'healthcare') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const HealthcareScreen()),
-                  );
-                } else if (s['category'] == 'transportation') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const TransportScreen()),
-                  );
-                } else if (s['category'] == 'retail') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RetailScreen()),
-                  );
-                } else if (s['category'] == 'utilities') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const UtilitiesScreen()),
-                  );
-                } else if (s['category'] == 'education') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const EducationScreen()),
-                  );
-                } else if (s['category'] == 'governance') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const GovernanceScreen()),
-                  );
+                Widget screen;
+                switch (s['category']) {
+                  case 'retail':
+                    screen = const RetailScreen();
+                    break;
+                  case 'healthcare':
+                    screen = const HealthcareScreen();
+                    break;
+                  case 'transportation':
+                    screen = const TransportScreen();
+                    break;
+                  case 'utilities':
+                    screen = const UtilitiesScreen();
+                    break;
+                  case 'education':
+                    screen = const EducationScreen();
+                    break;
+                  case 'governance':
+                    screen = const GovernanceScreen();
+                    break;
+                  case 'safety':
+                    screen = const SafetyScreen();
+                    break;
+                  case 'tourism':
+                    screen = const TourismScreen();
+                    break;
+                  case 'metaverse':
+                  default:
+                    screen = const MetaverseScreen();
                 }
+                Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
               },
               borderRadius: BorderRadius.circular(16),
               child: Container(
