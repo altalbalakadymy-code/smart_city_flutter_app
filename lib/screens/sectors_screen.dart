@@ -151,7 +151,7 @@ class SectorsScreen extends StatelessWidget {
                 Widget screen;
                 switch (s['category']) {
                   case 'retail':
-                    screen = const RetailScreen();
+                    screen = RetailScreen(currentUser: currentUser);
                     break;
                   case 'healthcare':
                     screen = const HealthcareScreen();
