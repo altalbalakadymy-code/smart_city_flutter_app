@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class UtilitiesScreen extends StatefulWidget {
   const UtilitiesScreen({super.key});
@@ -30,7 +32,7 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
               controller: textController,
               style: const TextStyle(color: Colors.white),
               decoration: InputDecoration(
-                hintText: 'مثال: تسريب مياه في الشارع الرئيسي...',
+                hintText: 'مثال: انقطاع إنارة الشارع الذكي رقم 4...',
                 hintStyle: const TextStyle(color: Colors.white30, fontSize: 12),
                 filled: true,
                 fillColor: const Color(0xFF0B132B),
@@ -46,14 +48,39 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFFFB703)),
-            onPressed: () {
+            onPressed: () async {
+              final text = textController.text.trim();
+              if (text.isEmpty) return;
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('تم إرسال البلاغ لغرفة عمليات المرافق الذكية فوراً ⚡'),
-                  backgroundColor: Color(0xFFFFB703),
-                ),
-              );
+
+              final url = Uri.parse("https://smartcitybackend-production-9d26.up.railway.app/api/v1/utilities/report");
+              try {
+                final res = await http.post(
+                  url,
+                  headers: {"Content-Type": "application/json"},
+                  body: jsonEncode({
+                    "service_type": "طوارئ المرافق العامة",
+                    "description": text,
+                  }),
+                );
+                if (res.statusCode == 200) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('تم تسجيل البلاغ في قاعدة بيانات المدينة بنجاح ⚡'),
+                      backgroundColor: Color(0xFFFFB703),
+                    ),
+                  );
+                } else {
+                  throw Exception();
+                }
+              } catch (_) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('فشل إرسال البلاغ لقاعدة البيانات السحابية'),
+                    backgroundColor: Color(0xFFFF5964),
+                  ),
+                );
+              }
             },
             child: const Text('إرسال البلاغ', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold)),
           ),
@@ -73,7 +100,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // لوحة الاستهلاك الحي
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
@@ -116,8 +142,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
             ),
           ),
           const SizedBox(height: 20),
-
-          // وضع توفير الطاقة الذكي (IoT)
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
@@ -146,14 +170,11 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
             ),
           ),
           const SizedBox(height: 20),
-
           const Text(
             'حالة شبكات ومحطات الحي',
             style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 12),
-
-          // بطاقة شبكة الكهرباء
           _buildUtilityCard(
             title: 'شبكة الطاقة والكهرباء',
             status: 'مستقرة - جهد 220V',
@@ -161,7 +182,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
             icon: Icons.electric_meter_rounded,
             iconColor: const Color(0xFFFFB703),
           ),
-          // بطاقة شبكة المياه
           _buildUtilityCard(
             title: 'شبكة التغذية المائية',
             status: 'ضغط ممتاز - جودة نقاء 99.1%',
@@ -169,7 +189,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
             icon: Icons.water_rounded,
             iconColor: const Color(0xFF00F5D4),
           ),
-          // بطاقة معالجة النفايات
           _buildUtilityCard(
             title: 'إدارة النفايات الذكية',
             status: 'الحاويات الذكية: 40% سعة متبقية',
@@ -177,7 +196,6 @@ class _UtilitiesScreenState extends State<UtilitiesScreen> {
             icon: Icons.delete_outline_rounded,
             iconColor: const Color(0xFFFF5964),
           ),
-
           const SizedBox(height: 20),
           SizedBox(
             height: 48,
