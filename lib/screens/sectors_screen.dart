@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dashboard_screen.dart';
+import 'login_screen.dart';
 import 'metaverse_screen.dart';
 import 'healthcare_screen.dart';
 import 'transport_screen.dart';
@@ -10,7 +12,9 @@ import 'safety_screen.dart';
 import 'tourism_screen.dart';
 
 class SectorsScreen extends StatelessWidget {
-  const SectorsScreen({super.key});
+  final Map<String, dynamic> currentUser;
+
+  const SectorsScreen({super.key, required this.currentUser});
 
   final List<Map<String, dynamic>> sectors = const [
     {
@@ -80,11 +84,39 @@ class SectorsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isAdmin = currentUser['role'] == 'admin';
+
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
       appBar: AppBar(
-        title: const Text('قطاعات المدينة الذكية'),
+        title: Text(
+          'أهلاً، ${currentUser['full_name'] ?? 'مواطن'}',
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         backgroundColor: const Color(0xFF1C2541),
+        actions: [
+          if (isAdmin)
+            IconButton(
+              tooltip: 'مركز قيادة المدينة',
+              icon: const Icon(Icons.admin_panel_settings_rounded, color: Color(0xFF00F5D4)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                );
+              },
+            ),
+          IconButton(
+            tooltip: 'تسجيل الخروج',
+            icon: const Icon(Icons.logout_rounded, color: Color(0xFFFF5964)),
+            onPressed: () {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginScreen()),
+              );
+            },
+          ),
+        ],
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
