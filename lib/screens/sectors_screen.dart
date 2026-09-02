@@ -1,17 +1,12 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
-import 'merchant_dashboard_screen.dart';
-import 'clinic_dashboard_screen.dart';
 import 'login_screen.dart';
-import 'metaverse_screen.dart';
-import 'healthcare_screen.dart';
 import 'transport_screen.dart';
-import 'retail_screen.dart';
-import 'utilities_screen.dart';
-import 'education_screen.dart';
-import 'governance_screen.dart';
-import 'safety_screen.dart';
 import 'tourism_screen.dart';
+import 'water_tanker_screen.dart';
+import 'qat_market_screen.dart';
+import 'water_driver_dashboard.dart';
+import 'qat_vendor_dashboard.dart';
 
 class SectorsScreen extends StatelessWidget {
   final Map<String, dynamic> currentUser;
@@ -20,75 +15,40 @@ class SectorsScreen extends StatelessWidget {
 
   final List<Map<String, dynamic>> sectors = const [
     {
-      'title': 'المتاجر والتسوق الذكي',
-      'category': 'retail',
-      'icon': Icons.shopping_bag_outlined,
-      'color': Color(0xFFFF5964),
-      'desc': 'كتالوج المنتجات، عربة التسوق الفورية، والدفع الرقمي الموحد.'
+      'title': 'وايتات وخزانات الماء الذكية',
+      'category': 'water',
+      'icon': Icons.water_drop_rounded,
+      'color': Color(0xFF00F5D4),
+      'desc': 'طلب صهاريج الماء المنزلية (شرب / غسيل) وتعبئة الخزانات الفورية بالـ GPS.'
     },
     {
-      'title': 'الرعاية الصحية والعيادات',
-      'category': 'healthcare',
-      'icon': Icons.local_hospital_outlined,
+      'title': 'سوق القات الذكي المعتمد',
+      'category': 'qat',
+      'icon': Icons.eco_rounded,
       'color': Color(0xFF06D6A0),
-      'desc': 'حجز المواعيد الطبية، السجلات الصحية، ومؤشرات نبض المدينة.'
+      'desc': 'استعراض أصناف القات المعتمدة، مقارنة الأسعار، والطلب السريع للمقيل.'
     },
     {
-      'title': 'النقل والمواصلات الذكية',
+      'title': 'النقل والمواصلات الذكية (قطاع 1)',
       'category': 'transportation',
       'icon': Icons.directions_bus_filled_outlined,
       'color': Color(0xFF118AB2),
-      'desc': 'تتبع الحافلات الذكية، محطات الشحن، ومسارات المرور الحية.'
+      'desc': 'سفريات بين المحافظات (عدن، تعز، حضرموت) وحافلات النقل الداخلي.'
     },
     {
-      'title': 'الطاقة والمرافق العامة',
-      'category': 'utilities',
-      'icon': Icons.bolt_outlined,
-      'color': Color(0xFFFFB703),
-      'desc': 'مراقبة استهلاك الكهرباء، شبكة المياه، وإدارة النفايات الذكية.'
-    },
-    {
-      'title': 'التعليم والتدريب التفاعلي',
-      'category': 'education',
-      'icon': Icons.school_outlined,
-      'color': Color(0xFF8338EC),
-      'desc': 'الفصول الافتراضية، الجامعات الذكية، والشهادات المعتمدة.'
-    },
-    {
-      'title': 'الخدمات الحكومية والبلدية',
-      'category': 'governance',
-      'icon': Icons.account_balance_outlined,
-      'color': Color(0xFF3A86FF),
-      'desc': 'المعاملات الرقمية، التراخيص السريعة، وصوت المواطن.'
-    },
-    {
-      'title': 'الأمن والسلامة والطوارئ',
-      'category': 'safety',
-      'icon': Icons.security_outlined,
-      'color': Color(0xFFE63946),
-      'desc': 'نظام الإنذار المبكر، الإسعاف السريع، وكاميرات المراقبة الذكية.'
-    },
-    {
-      'title': 'السياحة والضيافة والترفيه',
+      'title': 'السياحة والضيافة والترفيه (قطاع 5)',
       'category': 'tourism',
       'icon': Icons.hotel_outlined,
       'color': Color(0xFFFB5607),
-      'desc': 'حجز الفنادق، الفعاليات الحية، والدليل السياحي التفاعلي.'
-    },
-    {
-      'title': 'الميتافيرس والتوأم الرقمي (3D)',
-      'category': 'metaverse',
-      'icon': Icons.view_in_ar_outlined,
-      'color': Color(0xFF00F5D4),
-      'desc': 'عالم تفاعلي ثلاثي الأبعاد، استكشاف المتاجر الحية، وتدوير المشهد باللمس.'
+      'desc': 'حجز المعالم التاريخية (دار الحجر، صنعاء القديمة)، الفنادق، والمنتزهات.'
     },
   ];
 
   @override
   Widget build(BuildContext context) {
     final bool isAdmin = currentUser['role'] == 'admin';
-    final bool isMerchant = currentUser['role'] == 'merchant';
-    final bool isClinic = currentUser['role'] == 'clinic';
+    final bool isDriver = currentUser['role'] == 'water_driver';
+    final bool isVendor = currentUser['role'] == 'qat_vendor';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
@@ -99,51 +59,41 @@ class SectorsScreen extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFF1C2541),
         actions: [
-          if (isClinic)
+          if (isDriver)
             IconButton(
-              tooltip: 'لوحة إدارة العيادة والأطباء',
-              icon: const Icon(Icons.local_hospital_rounded, color: Color(0xFF06D6A0)),
+              tooltip: 'لوحة مهام سائق الوايت',
+              icon: const Icon(Icons.local_shipping_rounded, color: Color(0xFF00F5D4)),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => ClinicDashboardScreen(clinicUser: currentUser),
-                  ),
+                  MaterialPageRoute(builder: (_) => WaterDriverDashboard(driverUser: currentUser)),
                 );
               },
             ),
-          if (isMerchant)
+          if (isVendor)
             IconButton(
-              tooltip: 'لوحة إدارة المتجر والمنتجات',
-              icon: const Icon(Icons.storefront_rounded, color: Color(0xFFFFB703)),
+              tooltip: 'لوحة بائع القات',
+              icon: const Icon(Icons.eco_rounded, color: Color(0xFF06D6A0)),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (_) => MerchantDashboardScreen(merchantUser: currentUser),
-                  ),
+                  MaterialPageRoute(builder: (_) => QatVendorDashboard(vendorUser: currentUser)),
                 );
               },
             ),
           if (isAdmin)
             IconButton(
-              tooltip: 'مركز قيادة المدينة',
+              tooltip: 'لوحة القيادة',
               icon: const Icon(Icons.admin_panel_settings_rounded, color: Color(0xFF00F5D4)),
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const DashboardScreen()),
-                );
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardScreen()));
               },
             ),
           IconButton(
             tooltip: 'تسجيل الخروج',
             icon: const Icon(Icons.logout_rounded, color: Color(0xFFFF5964)),
             onPressed: () {
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const LoginScreen()),
-              );
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
             },
           ),
         ],
@@ -165,33 +115,18 @@ class SectorsScreen extends StatelessWidget {
               onTap: () {
                 Widget screen;
                 switch (s['category']) {
-                  case 'retail':
-                    screen = RetailScreen(currentUser: currentUser);
+                  case 'water':
+                    screen = WaterTankerScreen(currentUser: currentUser);
                     break;
-                  case 'healthcare':
-                    screen = HealthcareScreen(currentUser: currentUser);
+                  case 'qat':
+                    screen = QatMarketScreen(currentUser: currentUser);
                     break;
                   case 'transportation':
-                    screen = const TransportScreen();
-                    break;
-                  case 'utilities':
-                    screen = const UtilitiesScreen();
-                    break;
-                  case 'education':
-                    screen = const EducationScreen();
-                    break;
-                  case 'governance':
-                    screen = const GovernanceScreen();
-                    break;
-                  case 'safety':
-                    screen = const SafetyScreen();
+                    screen = TransportScreen(currentUser: currentUser);
                     break;
                   case 'tourism':
-                    screen = const TourismScreen();
-                    break;
-                  case 'metaverse':
                   default:
-                    screen = const MetaverseScreen();
+                    screen = TourismScreen(currentUser: currentUser);
                 }
                 Navigator.push(context, MaterialPageRoute(builder: (_) => screen));
               },
@@ -201,7 +136,7 @@ class SectorsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: const Color(0xFF1C2541),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: (s['color'] as Color).withOpacity(0.3)),
+                  border: Border.all(color: (s['color'] as Color).withOpacity(0.35)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -213,20 +148,12 @@ class SectorsScreen extends StatelessWidget {
                     const Spacer(),
                     Text(
                       s['title'],
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
+                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       s['desc'],
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.55),
-                        fontSize: 11,
-                        height: 1.2,
-                      ),
+                      style: TextStyle(color: Colors.white.withOpacity(0.55), fontSize: 11, height: 1.2),
                       maxLines: 3,
                       overflow: TextOverflow.ellipsis,
                     ),
