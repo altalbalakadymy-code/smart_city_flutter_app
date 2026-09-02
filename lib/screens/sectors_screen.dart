@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 import 'merchant_dashboard_screen.dart';
+import 'clinic_dashboard_screen.dart';
 import 'login_screen.dart';
 import 'metaverse_screen.dart';
 import 'healthcare_screen.dart';
@@ -87,6 +88,7 @@ class SectorsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isAdmin = currentUser['role'] == 'admin';
     final bool isMerchant = currentUser['role'] == 'merchant';
+    final bool isClinic = currentUser['role'] == 'clinic';
 
     return Scaffold(
       backgroundColor: const Color(0xFF0B132B),
@@ -97,6 +99,19 @@ class SectorsScreen extends StatelessWidget {
         ),
         backgroundColor: const Color(0xFF1C2541),
         actions: [
+          if (isClinic)
+            IconButton(
+              tooltip: 'لوحة إدارة العيادة والأطباء',
+              icon: const Icon(Icons.local_hospital_rounded, color: Color(0xFF06D6A0)),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ClinicDashboardScreen(clinicUser: currentUser),
+                  ),
+                );
+              },
+            ),
           if (isMerchant)
             IconButton(
               tooltip: 'لوحة إدارة المتجر والمنتجات',
@@ -154,7 +169,7 @@ class SectorsScreen extends StatelessWidget {
                     screen = RetailScreen(currentUser: currentUser);
                     break;
                   case 'healthcare':
-                    screen = const HealthcareScreen();
+                    screen = HealthcareScreen(currentUser: currentUser);
                     break;
                   case 'transportation':
                     screen = const TransportScreen();
