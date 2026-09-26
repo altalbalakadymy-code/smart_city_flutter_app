@@ -453,7 +453,7 @@ class ApiService {
     return true;
   }
 
-  // ===================== قطاع المتاجر الشاملة (دعم الصورة، السعر، والوصف) =====================
+  // ===================== قطاع المتاجر الشاملة =====================
   static Future<List<Map<String, dynamic>>> fetchRetailProducts() async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -491,66 +491,8 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {
-        'id': 1,
-        'store_name': 'عالم الإلكترونيات الذكي',
-        'store_category': 'إلكترونيات وهواتف',
-        'product_title': 'هاتف سامسونج الترا 256 جيجا',
-        'description': 'نسخة الشرق الأوسط شريحتين مع ضمان سنة كاملة وشاحن سريع أصلي.',
-        'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80',
-        'price': 480000.0,
-        'stock_quantity': 4,
-        'hold_hours': 24,
-        'phone': '771122334',
-      },
-      {
-        'id': 2,
-        'store_name': 'بوتيك الأناقة الراقية',
-        'store_category': 'ملابس وموضة',
-        'product_title': 'بدلة رسمية كلاسيكية رجالي',
-        'description': 'قماش صوف إيطالي فاخر متوفر بمقاسات متعددة مناسبة للمناسبات الرسمية.',
-        'image_url': 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80',
-        'price': 35000.0,
-        'stock_quantity': 8,
-        'hold_hours': 48,
-        'phone': '772233445',
-      },
-      {
-        'id': 3,
-        'store_name': 'توي لاند للألعاب والترفيه',
-        'store_category': 'ألعاب وترفيه',
-        'product_title': 'جهاز بلايستيشن 5 مع يدين تحكم',
-        'description': 'إصدار السي دي النسخة الأوروبية مع لعبتين هدية وضمان تشغيل.',
-        'image_url': 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&q=80',
-        'price': 320000.0,
-        'stock_quantity': 3,
-        'hold_hours': 24,
-        'phone': '773344556',
-      },
-      {
-        'id': 4,
-        'store_name': 'العربية للعود والعطور',
-        'store_category': 'عطور ومستحضرات',
-        'product_title': 'باقة عطر ملكي خاص مع دهن عود',
-        'description': 'تركيبة خاصة فواحة وثابتة لأكثر من 48 ساعة تأتي في علبة هدايا جلدية فاخرة.',
-        'image_url': 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=500&q=80',
-        'price': 28000.0,
-        'stock_quantity': 12,
-        'hold_hours': 48,
-        'phone': '774455667',
-      },
-      {
-        'id': 5,
-        'store_name': 'قصر الأدوات والمستلزمات',
-        'store_category': 'مستلزمات منزلية',
-        'product_title': 'طقم أواني جرانيت إيطالي 10 قطع',
-        'description': 'غير قابل للالتصاق ومقاوم للخدش متوافق مع كافة أنواع الأفران.',
-        'image_url': 'https://images.unsplash.com/photo-1584990347449-39958f844282?w=500&q=80',
-        'price': 52000.0,
-        'stock_quantity': 6,
-        'hold_hours': 48,
-        'phone': '775566778',
-      },
+      {'id': 1, 'store_name': 'عالم الإلكترونيات الذكي', 'store_category': 'إلكترونيات وهواتف', 'product_title': 'هاتف سامسونج الترا 256 جيجا', 'description': 'نسخة الشرق الأوسط شريحتين مع ضمان سنة كاملة وشاحن سريع أصلي.', 'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80', 'price': 480000.0, 'stock_quantity': 4, 'hold_hours': 24, 'phone': '771122334'},
+      {'id': 2, 'store_name': 'بوتيك الأناقة الراقية', 'store_category': 'ملابس وموضة', 'product_title': 'بدلة رسمية كلاسيكية رجالي', 'description': 'قماش صوف إيطالي فاخر متوفر بمقاسات متعددة مناسبة للمناسبات الرسمية.', 'image_url': 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80', 'price': 35000.0, 'stock_quantity': 8, 'hold_hours': 48, 'phone': '772233445'},
     ];
   }
 
@@ -583,19 +525,149 @@ class ApiService {
           )
         ''');
         await conn.execute(
+          Sql.named('INSERT INTO retail_products (store_name, store_category, product_title, description, image_url, price, stock_quantity, hold_hours, phone) VALUES (@store, @cat, @title, @desc, @img, @price, @stock, @hours, @phone)'),
+          parameters: {'store': storeName, 'cat': storeCategory, 'title': productTitle, 'desc': description, 'img': imageUrl, 'price': price, 'stock': stock, 'hours': holdHours, 'phone': phone},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== قطاع أسواق القات والمقاوته =====================
+  static Future<List<Map<String, dynamic>>> fetchQatMarkets() async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS qat_vendors_lots (
+            id SERIAL PRIMARY KEY,
+            market_name VARCHAR(150) NOT NULL,
+            vendor_name VARCHAR(150) NOT NULL,
+            stall_number VARCHAR(50) NOT NULL,
+            qat_type VARCHAR(100) NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price NUMERIC(10, 2) NOT NULL,
+            available_bundles INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        final res = await conn.execute(Sql.named('SELECT id, market_name, vendor_name, stall_number, qat_type, description, image_url, price, available_bundles, phone FROM qat_vendors_lots ORDER BY id DESC'));
+        await conn.close();
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'market_name': r[1].toString(),
+            'vendor_name': r[2].toString(),
+            'stall_number': r[3].toString(),
+            'qat_type': r[4].toString(),
+            'description': r[5].toString(),
+            'image_url': r[6].toString(),
+            'price': (r[7] as num).toDouble(),
+            'available_bundles': r[8] as int,
+            'phone': r[9]?.toString() ?? '770000000',
+          }).toList();
+        }
+      } catch (_) {}
+    }
+    return [
+      {
+        'id': 1,
+        'market_name': 'سوق مذبح المركزي النموذجي',
+        'vendor_name': 'أبو عادل الهمداني',
+        'stall_number': 'بسطة 14 - الجناح الشرقي',
+        'qat_type': 'همداني غيلي سوبر',
+        'description': 'قطفة فجر اليوم، رطب صافي ورأس حبة ناعم جداً مروي ماء بئر عذب.',
+        'image_url': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80',
+        'price': 12000.0,
+        'available_bundles': 5,
+        'phone': '771444555',
+      },
+      {
+        'id': 2,
+        'market_name': 'سوق مذبح المركزي النموذجي',
+        'vendor_name': 'الحاج مصلح الصبري',
+        'stall_number': 'بسطة 22 - مدخل السوق الرئيسي',
+        'qat_type': 'صبري ممتاز رطب',
+        'description': 'باقة صبري بلدي درجة أولى حبة خضراء حالية خالية من أي رش.',
+        'image_url': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&q=80',
+        'price': 8000.0,
+        'available_bundles': 8,
+        'phone': '772555666',
+      },
+      {
+        'id': 3,
+        'market_name': 'سوق شميلة الموحد',
+        'vendor_name': 'عبدالرحمن الأرحبي',
+        'stall_number': 'موقع 7 - الممر الأوسط',
+        'qat_type': 'أرحبي ذيباني مختار',
+        'description': 'قات أرحبي نخب أول قاع البئر، حبة ثقيلة تعميرة ممتازة.',
+        'image_url': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80',
+        'price': 15000.0,
+        'available_bundles': 4,
+        'phone': '773666777',
+      },
+      {
+        'id': 4,
+        'market_name': 'سوق السنينة النموذجي',
+        'vendor_name': 'جميل الحرازي',
+        'stall_number': 'ركن 3 - جوار الإدارة',
+        'qat_type': 'حرازي فاخر قطفة ندى',
+        'description': 'قطفة مبكرة حبة رطبة خفيفة ومذاق نقي جداً، تثبيت فوري للاستلام.',
+        'image_url': 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=500&q=80',
+        'price': 9500.0,
+        'available_bundles': 6,
+        'phone': '774777888',
+      },
+    ];
+  }
+
+  static Future<bool> addQatVendorLot({
+    required String marketName,
+    required String vendorName,
+    required String stallNumber,
+    required String qatType,
+    required String description,
+    required String imageUrl,
+    required double price,
+    required int bundles,
+    required String phone,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS qat_vendors_lots (
+            id SERIAL PRIMARY KEY,
+            market_name VARCHAR(150) NOT NULL,
+            vendor_name VARCHAR(150) NOT NULL,
+            stall_number VARCHAR(50) NOT NULL,
+            qat_type VARCHAR(100) NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price NUMERIC(10, 2) NOT NULL,
+            available_bundles INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        await conn.execute(
           Sql.named(
-            'INSERT INTO retail_products (store_name, store_category, product_title, description, image_url, price, stock_quantity, hold_hours, phone) '
-            'VALUES (@store, @cat, @title, @desc, @img, @price, @stock, @hours, @phone)'
+            'INSERT INTO qat_vendors_lots (market_name, vendor_name, stall_number, qat_type, description, image_url, price, available_bundles, phone) '
+            'VALUES (@mkt, @ven, @stl, @type, @desc, @img, @price, @bnd, @phone)'
           ),
           parameters: {
-            'store': storeName,
-            'cat': storeCategory,
-            'title': productTitle,
+            'mkt': marketName,
+            'ven': vendorName,
+            'stl': stallNumber,
+            'type': qatType,
             'desc': description,
             'img': imageUrl,
             'price': price,
-            'stock': stock,
-            'hours': holdHours,
+            'bnd': bundles,
             'phone': phone,
           },
         );
