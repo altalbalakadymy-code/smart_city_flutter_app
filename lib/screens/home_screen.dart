@@ -29,130 +29,35 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
-  void _showAddBusinessDialog() {
-    final nameCtrl = TextEditingController();
-    final phoneCtrl = TextEditingController();
-    final feeCtrl = TextEditingController(text: '50');
-    String selectedType = 'STORE';
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (ctx) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          top: 20,
-          left: 20,
-          right: 20,
-        ),
-        child: StatefulBuilder(
-          builder: (context, setModalState) => Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text(
-                'إضافة منشأة أو خدمة جديدة',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: nameCtrl,
-                decoration: InputDecoration(
-                  labelText: 'اسم المنشأة أو المحل',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              DropdownButtonFormField<String>(
-                value: selectedType,
-                decoration: InputDecoration(
-                  labelText: 'القطاع الخدمي',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                items: const [
-                  DropdownMenuItem(value: 'STORE', child: Text('المتاجر والاستهلاك')),
-                  DropdownMenuItem(value: 'RESTAURANT', child: Text('المطاعم والوجبات')),
-                  DropdownMenuItem(value: 'CLINIC', child: Text('العيادات والأطباء')),
-                  DropdownMenuItem(value: 'BUS', child: Text('باصات السفر بين المحافظات')),
-                  DropdownMenuItem(value: 'WATER', child: Text('وايتات مياه الشرب')),
-                  DropdownMenuItem(value: 'QAT', child: Text('أسواق القات النموذجية')),
-                  DropdownMenuItem(value: 'HOTEL', child: Text('الفنادق والأجنحة')),
-                  DropdownMenuItem(value: 'CAR', child: Text('تأجير السيارات')),
-                  DropdownMenuItem(value: 'REALTY', child: Text('العقارات والبيوت')),
-                ],
-                onChanged: (val) {
-                  if (val != null) setModalState(() => selectedType = val);
-                },
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: phoneCtrl,
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  labelText: 'رقم هاتف المنشأة للتواصل',
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-              ),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0F172A),
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                ),
-                onPressed: () async {
-                  if (nameCtrl.text.isEmpty) return;
-                  Navigator.pop(ctx);
-                  final success = await ApiService.addBusiness(
-                    name: nameCtrl.text.trim(),
-                    type: selectedType,
-                    phone: phoneCtrl.text.trim(),
-                    monthlyFee: double.tryParse(feeCtrl.text) ?? 50.0,
-                  );
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(success ? 'تم حفظ المنشأة بنجاح في قاعدة البيانات' : 'تعذر إضافة المنشأة'),
-                        backgroundColor: success ? Colors.green : Colors.red,
-                      ),
-                    );
-                    setState(() {});
-                  }
-                },
-                child: const Text('حفظ المنشأة مباشرة', style: TextStyle(color: Colors.white, fontSize: 16)),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
+    final role = user['role'] ?? 'CLIENT';
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF1F5F9),
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         elevation: 0,
         backgroundColor: const Color(0xFF0F172A),
         title: Row(
           children: [
-            const Icon(Icons.location_city_rounded, color: Color(0xFF06B6D4), size: 24),
-            const SizedBox(width: 8),
-            Text(
-              'المنصة الذكية (${user['name']})',
-              style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(color: const Color(0xFF1E293B), borderRadius: BorderRadius.circular(8)),
+              child: const Icon(Icons.location_city_rounded, color: Color(0xFF06B6D4), size: 20),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('المدينة الذكية 3D', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                Text('المستخدم: ${user['name']}', style: const TextStyle(color: Colors.white60, fontSize: 11)),
+              ],
             ),
           ],
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.dashboard, color: Colors.white70),
+            icon: const Icon(Icons.dashboard_customize_outlined, color: Colors.white70),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardScreen())),
           ),
           IconButton(
@@ -161,27 +66,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        backgroundColor: const Color(0xFF0F172A),
-        icon: const Icon(Icons.add_business, color: Color(0xFF06B6D4)),
-        label: const Text('إضافة منشأة', style: TextStyle(color: Colors.white)),
-        onPressed: _showAddBusinessDialog,
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // بطاقة VIP والمستخدم
+            // بطاقة VIP Card
             Container(
-              padding: const EdgeInsets.all(18),
+              padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
                   colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 children: [
@@ -189,53 +88,90 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF06B6D4),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            user['role'] == 'VENDOR' ? 'حساب تاجر' : 'عضوية VIP نشطة',
-                            style: const TextStyle(color: Color(0xFF0F172A), fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFF06B6D4),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                role == 'ADMIN' ? 'صلاحية المدير العام' : (role == 'VENDOR' ? 'حساب تاجر معتمد' : 'عضوية VIP مفعّلة'),
+                                style: const TextStyle(color: Color(0xFF0F172A), fontSize: 11, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Text('خصم 20% آلي', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          user['name'],
-                          style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-                        ),
-                        Text(
-                          'رقم الهاتف: ${user['phone']}',
-                          style: const TextStyle(color: Colors.white60, fontSize: 12),
-                        ),
+                        const SizedBox(height: 10),
+                        Text(user['name'], style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 4),
+                        const Text('نموذج الحجز المؤكد والتواصل المباشر', style: TextStyle(color: Colors.white60, fontSize: 12)),
                       ],
                     ),
                   ),
                   InkWell(
                     onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MetaverseScreen())),
                     child: Container(
-                      padding: const EdgeInsets.all(10),
+                      padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: const Color(0xFF06B6D4).withOpacity(0.15),
                         shape: BoxShape.circle,
                         border: Border.all(color: const Color(0xFF06B6D4), width: 1.5),
                       ),
-                      child: const Icon(Icons.view_in_ar, color: Color(0xFF06B6D4), size: 28),
+                      child: const Icon(Icons.view_in_ar, color: Color(0xFF06B6D4), size: 30),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 22),
+            const SizedBox(height: 24),
 
-            const Text(
-              'القطاعات التسعة المعتمدة',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+            // زر الميتافيرس العريض
+            InkWell(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MetaverseScreen())),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF2563EB), Color(0xFF1D4ED8)]),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.gamepad, color: Colors.white, size: 28),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('تسوق تفاعلي في الميتافيرس 3D', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text('تحكم بشخصيتك واكتشف المحلات عبر الجويستيك', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, color: Colors.white, size: 14),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 24),
 
-            // قائمة القطاعات التسعة
+            // عنوان شبكة الخدمات
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text('القطاعات والخدمات التسعة', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                TextButton(
+                  onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => SectorsScreen(currentUser: user))),
+                  child: const Text('عرض الكل', style: TextStyle(color: Color(0xFF06B6D4))),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // شبكة القطاعات الـ 9
             GridView.count(
               crossAxisCount: 3,
               crossAxisSpacing: 10,
@@ -243,15 +179,15 @@ class _HomeScreenState extends State<HomeScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildSectorCard('المتاجر', Icons.storefront, Colors.indigo),
-                _buildSectorCard('المطاعم', Icons.restaurant, Colors.orange),
-                _buildSectorCard('العيادات', Icons.medical_services, Colors.teal),
-                _buildSectorCard('باصات السفر', Icons.directions_bus, Colors.blue),
-                _buildSectorCard('وايتات مياه', Icons.water_drop, Colors.cyan),
-                _buildSectorCard('سوق القات', Icons.eco, Colors.green),
-                _buildSectorCard('الفنادق', Icons.hotel, Colors.deepPurple),
-                _buildSectorCard('تأجير سيارات', Icons.directions_car, Colors.amber.shade800),
-                _buildSectorCard('العقارات', Icons.home_work, Colors.blueGrey),
+                _buildSectorItem('المتاجر', Icons.storefront, Colors.indigo),
+                _buildSectorItem('المطاعم', Icons.restaurant, Colors.orange),
+                _buildSectorItem('العيادات', Icons.medical_services, Colors.teal),
+                _buildSectorItem('باصات السفر', Icons.directions_bus, Colors.blue),
+                _buildSectorItem('وايتات مياه', Icons.water_drop, Colors.cyan),
+                _buildSectorItem('سوق القات', Icons.eco, Colors.green),
+                _buildSectorItem('الفنادق', Icons.hotel, Colors.deepPurple),
+                _buildSectorItem('تأجير سيارات', Icons.directions_car, Colors.amber.shade800),
+                _buildSectorItem('العقارات', Icons.home_work, Colors.blueGrey),
               ],
             ),
           ],
@@ -260,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSectorCard(String title, IconData icon, Color color) {
+  Widget _buildSectorItem(String title, IconData icon, Color color) {
     return InkWell(
       onTap: () {
         Navigator.push(
@@ -271,11 +207,8 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.black.withOpacity(0.05)),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2)),
-          ],
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: Colors.black.withOpacity(0.04)),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
