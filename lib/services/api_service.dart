@@ -1,76 +1,108 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:postgres/postgres.dart';
 import '../core/api_config.dart';
-import '../models/business_model.dart';
 
 class ApiService {
-  // فحص حالة السيرفر السحابي
-  static Future<Map<String, dynamic>> checkServerHealth() async {
+  static Future<Connection> _getConnection() async {
+    final endpoint = Endpoint(
+      host: ApiConfig.dbHost,
+      port: ApiConfig.dbPort,
+      database: ApiConfig.dbName,
+      username: ApiConfig.dbUsername,
+      password: ApiConfig.dbPassword,
+    );
+
+    return await Connection.open(
+      endpoint,
+      settings: const ConnectionSettings(sslMode: SslMode.require),
+    );
+  }
+
+  // جلب كافة المنشآت والأنشطة للقطاعات الـ 9
+  static Future<List<Map<String, dynamic>>> fetchBusinesses() async {
+    Connection? connection;
     try {
-      final response = await http.get(Uri.parse(ApiConfig.healthCheck)).timeout(
-        const Duration(seconds: 10),
+      connection = await _getConnection();
+      final result = await connection.execute(
+        Sql.named('SELECT id, owner_id, name, type, phone, latitude, longitude, is_active, monthly_fee FROM businesses WHERE is_active = true')
       );
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
+      
+      return result.map((row) {
         return {
-          'isOnline': data['status'] == 'online',
-          'message': data['system'] ?? 'السيرفر متصل بنجاح',
-          'statusCode': response.statusCode,
+          'id': row[0],
+          'owner_id': row[1],
+          'name': row[2],
+          'type': row[3],
+          'phone': row[4],
+          'latitude': row[5],
+          'longitude': row[6],
+          'is_active': row[7],
+          'monthly_fee': row[8],
         };
-      }
-      return {'isOnline': false, 'message': 'كود الاستجابة: ${response.statusCode}'};
+      }).toList();
     } catch (e) {
-      return {'isOnline': false, 'message': 'تعذر الاتصال بالسيرفر: $e'};
+      return [];
+    } finally {
+      await connection?.close();
     }
   }
 
-  // جلب قائمة الأنشطة والمتاجر المسجلة
-  static Future<List<BusinessModel>> fetchBusinesses() async {
+  // جلب الكتالوج والسلع التابعة لمنشأة معينة
+  static Future<List<Map<String, dynamic>>> fetchCatalogByBusiness(int businessId) async {
+    Connection? connection;
     try {
-      final response = await http.get(Uri.parse(ApiConfig.businessesList)).timeout(
-        const Duration(seconds: 10),
+      connection = await _getConnection();
+      final result = await connection.execute(
+        Sql.named('SELECT id, business_id, title, price, vip_discount_pct, shelf_id FROM catalog_services WHERE business_id = @id'),
+        parameters: {'id': businessId},
       );
-      if (response.statusCode == 200) {
-        final dynamic decoded = jsonDecode(response.body);
-        if (decoded is List) {
-          return decoded.map((item) => BusinessModel.fromJson(item)).toList();
-        } else if (decoded is Map && decoded.containsKey('businesses')) {
-          final List list = decoded['businesses'];
-          return list.map((item) => BusinessModel.fromJson(item)).toList();
-        }
-      }
-      return [];
+
+      return result.map((row) {
+        return {
+          'id': row[0],
+          'business_id': row[1],
+          'title': row[2],
+          'price': row[3],
+          'vip_discount_pct': row[4],
+          'shelf_id': row[5],
+        };
+      }).toList();
     } catch (e) {
       return [];
+    } finally {
+      await connection?.close();
     }
   }
 
-  // إنشاء تاجر أو نشاط تجاري جديد
-  static Future<bool> createVendor({
-    required String username,
-    required String email,
-    required String password,
-    required String businessName,
-    required String businessType,
+  // إضافة حجز وتذكرة QR مؤكدة
+  static Future<bool> createBooking({
+    required int userId,
+    required int businessId,
+    required String category,
+    required double totalPrice,
+    required String qrPass,
   }) async {
+    Connection? connection;
     try {
-      final body = jsonEncode({
-        "username": username,
-        "email": email,
-        "password": password,
-        "business_name": businessName,
-        "business_type": businessType,
-      });
-
-      final response = await http.post(
-        Uri.parse(ApiConfig.createVendor),
-        headers: {"Content-Type": "application/json"},
-        body: body,
-      ).timeout(const Duration(seconds: 10));
-
-      return response.statusCode == 200 || response.statusCode == 201;
+      connection = await _getConnection();
+      await connection.execute(
+        Sql.named(
+          'INSERT INTO service_bookings (user_id, business_id, category, total_price, qr_pass, status) '
+          'VALUES (@userId, @businessId, @category, @totalPrice, @qrPass, @status)'
+        ),
+        parameters: {
+          'userId': userId,
+          'businessId': businessId,
+          'category': category,
+          'totalPrice': totalPrice,
+          'qrPass': qrPass,
+          'status': 'CONFIRMED',
+        },
+      );
+      return true;
     } catch (e) {
       return false;
+    } finally {
+      await connection?.close();
     }
   }
 }
