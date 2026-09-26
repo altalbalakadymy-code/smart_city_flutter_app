@@ -134,9 +134,21 @@ class ApiService {
     return _inMemoryBusinesses.where((b) => b['type'] == category).toList();
   }
 
-  // 4. إضافة منشأة أو حجز جديد
+  // 4. إضافة منشأة أو حجز جديد (تم الربط مع جدول الحجوزات آلياً)
   static Future<bool> addBusinessItem(Map<String, dynamic> item) async {
     _inMemoryBusinesses.insert(0, item);
+
+    // إذا كان العنصر يحتوي كود تذكرة qr_pass احفظه فوراً في الحجوزات
+    if (item.containsKey('qr_pass')) {
+      await saveBooking(
+        userId: item['user_id']?.toString() ?? '1',
+        businessName: item['business_name']?.toString() ?? item['name']?.toString() ?? 'خدمة مؤكدة',
+        category: item['category']?.toString() ?? item['type']?.toString() ?? 'GENERAL',
+        totalPrice: (item['total_price'] as num?)?.toDouble() ?? 0.0,
+        qrPass: item['qr_pass'].toString(),
+      );
+    }
+
     final conn = await _tryConnect();
     if (conn != null) {
       try {
@@ -907,7 +919,7 @@ class ApiService {
 
         if (res.isNotEmpty) {
           return res.map((r) => {
-            'id': r[0],
+            'id': r[0].toString(),
             'business_name': r[1].toString(),
             'category': r[2].toString(),
             'total_price': (r[3] as num).toDouble(),
@@ -925,7 +937,7 @@ class ApiService {
 
     return [
       {
-        'id': 101,
+        'id': '101',
         'business_name': 'شركة النورس للنقل الدولي VIP',
         'category': 'BUS',
         'total_price': 12000.0,
@@ -934,7 +946,7 @@ class ApiService {
         'created_at': 'اليوم 08:30 ص',
       },
       {
-        'id': 102,
+        'id': '102',
         'business_name': 'مركز الشفاء التخصصي - د. أحمد شرف الدين',
         'category': 'CLINIC',
         'total_price': 6400.0,
@@ -953,7 +965,7 @@ class ApiService {
     required String qrPass,
   }) async {
     final newBooking = {
-      'id': DateTime.now().millisecondsSinceEpoch,
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'user_id': userId,
       'business_name': businessName,
       'category': category,
@@ -1003,14 +1015,15 @@ class ApiService {
     return true;
   }
 
-  static Future<bool> cancelBooking(int bookingId) async {
-    _inMemoryBookings.removeWhere((b) => b['id'] == bookingId);
+  static Future<bool> cancelBooking(dynamic bookingId) async {
+    _inMemoryBookings.removeWhere((b) => b['id'].toString() == bookingId.toString());
     final conn = await _tryConnect();
     if (conn != null) {
       try {
+        final intId = int.tryParse(bookingId.toString()) ?? 0;
         await conn.execute(
           Sql.named('UPDATE service_bookings SET status = @st WHERE id = @bid'),
-          parameters: {'st': 'CANCELLED', 'bid': bookingId},
+          parameters: {'st': 'CANCELLED', 'bid': intId},
         );
         await conn.close();
         return true;
