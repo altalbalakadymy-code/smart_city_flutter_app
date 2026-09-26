@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import 'qr_scanner_screen.dart';
+import 'transport_screen.dart';
+import 'healthcare_screen.dart';
+import 'water_tanker_screen.dart';
+import 'restaurant_screen.dart';
+import 'retail_screen.dart';
+import 'qat_market_screen.dart';
+import 'tourism_screen.dart';
+import 'car_rental_screen.dart';
+import 'real_estate_screen.dart';
 
 class VendorPortalScreen extends StatefulWidget {
   final Map<String, dynamic> currentUser;
@@ -12,22 +21,36 @@ class VendorPortalScreen extends StatefulWidget {
 }
 
 class _VendorPortalScreenState extends State<VendorPortalScreen> {
-  List<Map<String, dynamic>> _myIncomingOrders = [];
+  List<Map<String, dynamic>> _mySectorOrders = [];
   bool _isLoading = true;
+
+  String get _vendorSector => widget.currentUser['vendor_sector'] ?? 'STORE';
+
+  final Map<String, Map<String, dynamic>> _sectorMeta = {
+    'STORE': {'title': 'قطاع المتاجر والسلع', 'icon': Icons.storefront, 'color': Colors.indigo},
+    'RESTAURANT': {'title': 'قطاع المطاعم والوجبات', 'icon': Icons.restaurant, 'color': Colors.orange},
+    'CLINIC': {'title': 'قطاع العيادات والأطباء', 'icon': Icons.medical_services, 'color': Colors.teal},
+    'BUS': {'title': 'قطاع باصات السفر والنقل', 'icon': Icons.directions_bus, 'color': Colors.blue},
+    'WATER': {'title': 'قطاع وايتات وصهاريج المياه', 'icon': Icons.water_drop, 'color': Colors.cyan},
+    'QAT': {'title': 'قطاع أسواق القات والمقاوته', 'icon': Icons.eco, 'color': Colors.green},
+    'HOTEL': {'title': 'قطاع الفنادق والشقق المفروشة', 'icon': Icons.hotel, 'color': Colors.deepPurple},
+    'CAR': {'title': 'قطاع تأجير السيارات السياحية', 'icon': Icons.directions_car, 'color': Colors.amber},
+    'REALTY': {'title': 'قطاع العقارات والمنازل', 'icon': Icons.home_work, 'color': Colors.blueGrey},
+  };
 
   @override
   void initState() {
     super.initState();
-    _loadVendorData();
+    _loadVendorOrders();
   }
 
-  Future<void> _loadVendorData() async {
+  Future<void> _loadVendorOrders() async {
     setState(() => _isLoading = true);
-    // جلب حجوزات المنشأة الحالية
-    final orders = await ApiService.fetchUserBookings(widget.currentUser['id']?.toString() ?? '1');
+    // جلب حجوزات هذا القطاع تحديداً
+    final allOrders = await ApiService.fetchUserBookings(widget.currentUser['id']?.toString() ?? '1');
     if (mounted) {
       setState(() {
-        _myIncomingOrders = orders;
+        _mySectorOrders = allOrders.where((o) => o['category'] == _vendorSector || _vendorSector == 'ALL').toList();
         _isLoading = false;
       });
     }
@@ -35,17 +58,37 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
 
   double get _totalEarnings {
     double total = 0;
-    for (var o in _myIncomingOrders) {
-      if (o['status'] == 'REDEEMED' || o['status'] == 'CONFIRMED') {
-        total += (o['total_price'] as num?)?.toDouble() ?? 0.0;
-      }
+    for (var o in _mySectorOrders) {
+      total += (o['total_price'] as num?)?.toDouble() ?? 0.0;
     }
     return total;
   }
 
+  void _openSectorAddScreen() {
+    Widget target;
+    switch (_vendorSector) {
+      case 'BUS': target = TransportScreen(currentUser: widget.currentUser); break;
+      case 'CLINIC': target = HealthcareScreen(currentUser: widget.currentUser); break;
+      case 'WATER': target = WaterTankerScreen(currentUser: widget.currentUser); break;
+      case 'RESTAURANT': target = RestaurantScreen(currentUser: widget.currentUser); break;
+      case 'STORE': target = RetailScreen(currentUser: widget.currentUser); break;
+      case 'QAT': target = QatMarketScreen(currentUser: widget.currentUser); break;
+      case 'HOTEL': target = TourismScreen(currentUser: widget.currentUser); break;
+      case 'CAR': target = CarRentalScreen(currentUser: widget.currentUser); break;
+      case 'REALTY': target = RealEstateScreen(currentUser: widget.currentUser); break;
+      default: target = RetailScreen(currentUser: widget.currentUser); break;
+    }
+    Navigator.push(context, MaterialPageRoute(builder: (_) => target));
+  }
+
   @override
   Widget build(BuildContext context) {
-    final vendorName = widget.currentUser['name'] ?? 'تاجر معتمد';
+    final meta = _sectorMeta[_vendorSector] ?? _sectorMeta['STORE']!;
+    final Color sectorColor = meta['color'] as Color;
+    final IconData sectorIcon = meta['icon'] as IconData;
+    final String sectorTitle = meta['title'] as String;
+
+    final vendorName = widget.currentUser['name'] ?? 'مزود معتمد';
     final vendorPhone = widget.currentUser['phone'] ?? '770000000';
 
     return Scaffold(
@@ -54,11 +97,11 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
         elevation: 0,
         backgroundColor: const Color(0xFF0F172A),
         foregroundColor: Colors.white,
-        title: const Text('لوحة تحكم ومحفظة التاجر', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        title: Text('لوحة حساب: $sectorTitle', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            onPressed: _loadVendorData,
+            onPressed: _loadVendorOrders,
           ),
         ],
       ),
@@ -69,12 +112,12 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  // بطاقة هوية التاجر
+                  // بطاقة المنشأة وهوية القطاع
                   Container(
                     padding: const EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                      gradient: LinearGradient(
+                        colors: [const Color(0xFF0F172A), sectorColor.withOpacity(0.8)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
@@ -90,8 +133,8 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                           children: [
                             CircleAvatar(
                               radius: 26,
-                              backgroundColor: const Color(0xFF06B6D4).withOpacity(0.15),
-                              child: const Icon(Icons.storefront, color: Color(0xFF06B6D4), size: 28),
+                              backgroundColor: Colors.white,
+                              child: Icon(sectorIcon, color: sectorColor, size: 28),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
@@ -106,14 +149,10 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 2),
-                                  Text('هاتف التواصل: $vendorPhone', style: const TextStyle(color: Colors.white60, fontSize: 12)),
+                                  Text(sectorTitle, style: const TextStyle(color: Colors.white70, fontSize: 12, fontWeight: FontWeight.bold)),
+                                  Text('هاتف التواصل: $vendorPhone', style: const TextStyle(color: Colors.white60, fontSize: 11)),
                                 ],
                               ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(color: Colors.amber.shade900, borderRadius: BorderRadius.circular(8)),
-                              child: const Text('حساب مزود', style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold)),
                             ),
                           ],
                         ),
@@ -121,9 +160,9 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            _buildStatItem('الطلبات الواردة', '${_myIncomingOrders.length} طلب'),
-                            _buildStatItem('المبيعات المحققة', '${_totalEarnings.toInt()} ر.ي'),
-                            _buildStatItem('حالة النشاط', 'نشط بالسيرفر'),
+                            _buildStatItem('العمليات والتذاكر', '${_mySectorOrders.length} طلب'),
+                            _buildStatItem('إجمالي مبيعات القطاع', '${_totalEarnings.toInt()} ر.ي'),
+                            _buildStatItem('الصلاحية', 'مزود معتمد'),
                           ],
                         ),
                       ],
@@ -131,8 +170,8 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                   ),
                   const SizedBox(height: 18),
 
-                  // الإجراءات السريعة
-                  const Text('إجراءات مزود الخدمة السريعة', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                  // الإجراءات الخاصة بقطاع التاجر
+                  const Text('العمليات السريعة للقطاع', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
                   const SizedBox(height: 10),
                   Row(
                     children: [
@@ -166,11 +205,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: InkWell(
-                          onTap: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('يمكنك نشر وإضافة خدمات جديدة مباشرة من خلال شاشة قطاعك التخصصي')),
-                            );
-                          },
+                          onTap: _openSectorAddScreen,
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
@@ -181,15 +216,15 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                                 BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 3)),
                               ],
                             ),
-                            child: const Column(
+                            child: Column(
                               children: [
                                 CircleAvatar(
-                                  backgroundColor: Color(0xFFEFF6FF),
-                                  child: Icon(Icons.add_business, color: Colors.blue),
+                                  backgroundColor: sectorColor.withOpacity(0.12),
+                                  child: Icon(Icons.add_circle_outline, color: sectorColor),
                                 ),
-                                SizedBox(height: 8),
-                                Text('إضافة بضاعة / خدمة', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                                Text('تثبيت عرض جديد', style: TextStyle(color: Colors.grey, fontSize: 10)),
+                                const SizedBox(height: 8),
+                                const Text('إضافة عنصر جديد', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                                Text('نشر في $sectorTitle', style: const TextStyle(color: Colors.grey, fontSize: 10), overflow: TextOverflow.ellipsis),
                               ],
                             ),
                           ),
@@ -199,26 +234,26 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                   ),
                   const SizedBox(height: 20),
 
-                  // قائمة الطلبات الموجهة للمنشأة
+                  // سجل الحجوزات الخاصة بهذا القطاع فقط
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('سجل الطلبات والتذاكر الخاصة بنشاطك', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
-                      Text('${_myIncomingOrders.length} عمليات', style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                      Text('طلبات $sectorTitle الموجهة لك', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF0F172A))),
+                      Text('${_mySectorOrders.length} تذاكر', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                     ],
                   ),
                   const SizedBox(height: 10),
 
-                  if (_myIncomingOrders.isEmpty)
+                  if (_mySectorOrders.isEmpty)
                     Container(
                       padding: const EdgeInsets.all(24),
                       alignment: Alignment.center,
                       decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-                      child: const Column(
+                      child: Column(
                         children: [
-                          Icon(Icons.inbox_outlined, size: 48, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text('لا توجد طلبات جديدة موجهة لمنشأتك حالياً', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                          Icon(sectorIcon, size: 48, color: Colors.grey.shade400),
+                          const SizedBox(height: 8),
+                          Text('لا توجد حجوزات جديدة مسجلة لـ $sectorTitle حتى الآن', style: const TextStyle(color: Colors.grey, fontSize: 12)),
                         ],
                       ),
                     )
@@ -226,9 +261,9 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                     ListView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      itemCount: _myIncomingOrders.length,
+                      itemCount: _mySectorOrders.length,
                       itemBuilder: (context, idx) {
-                        final order = _myIncomingOrders[idx];
+                        final order = _mySectorOrders[idx];
                         final isDone = order['status'] == 'REDEEMED';
 
                         return Container(
@@ -262,7 +297,7 @@ class _VendorPortalScreenState extends State<VendorPortalScreen> {
                                       borderRadius: BorderRadius.circular(4),
                                     ),
                                     child: Text(
-                                      isDone ? 'تم التسليم' : 'بانتظار الاستلام',
+                                      isDone ? 'تم الاستلام' : 'بانتظار العميل',
                                       style: TextStyle(color: isDone ? Colors.green.shade800 : Colors.amber.shade900, fontSize: 10, fontWeight: FontWeight.bold),
                                     ),
                                   ),
