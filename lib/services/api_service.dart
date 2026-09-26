@@ -942,15 +942,6 @@ class ApiService {
         'status': 'CONFIRMED',
         'created_at': 'أمس 04:15 م',
       },
-      {
-        'id': 103,
-        'business_name': 'محطة آبار حِدة - صهريج 6000 لتر',
-        'category': 'WATER',
-        'total_price': 14400.0,
-        'qr_pass': 'PASS-H2O-991244',
-        'status': 'CONFIRMED',
-        'created_at': 'منذ يومين',
-      },
     ];
   }
 
@@ -1020,6 +1011,102 @@ class ApiService {
         await conn.execute(
           Sql.named('UPDATE service_bookings SET status = @st WHERE id = @bid'),
           parameters: {'st': 'CANCELLED', 'bid': bookingId},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== نظام الشات السحابي الموحد =====================
+  static Future<List<Map<String, dynamic>>> fetchChatHistory({
+    required String targetId,
+    required String userId,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS chat_messages (
+            id SERIAL PRIMARY KEY,
+            sender_id VARCHAR(50) NOT NULL,
+            receiver_id VARCHAR(50) NOT NULL,
+            sender_role VARCHAR(50) NOT NULL,
+            message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        final res = await conn.execute(
+          Sql.named(
+            'SELECT id, sender_id, receiver_id, sender_role, message, created_at '
+            'FROM chat_messages '
+            'WHERE (sender_id = @uid AND receiver_id = @tid) OR (sender_id = @tid AND receiver_id = @uid) '
+            'ORDER BY id ASC'
+          ),
+          parameters: {'uid': userId, 'tid': targetId},
+        );
+        await conn.close();
+
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'sender_id': r[1].toString(),
+            'receiver_id': r[2].toString(),
+            'sender_role': r[3].toString(),
+            'message': r[4].toString(),
+            'created_at': r[5]?.toString() ?? '',
+          }).toList();
+        }
+      } catch (_) {}
+    }
+
+    return [
+      {
+        'id': 1,
+        'sender_id': targetId,
+        'receiver_id': userId,
+        'sender_role': 'VENDOR',
+        'message': 'مرحباً بك! تفضل بطرح أي استفسار بخصوص الخدمة أو الحجز.',
+        'created_at': 'الآن',
+      }
+    ];
+  }
+
+  static Future<bool> sendChatMessage({
+    required String senderId,
+    required String receiverId,
+    required String senderRole,
+    required String message,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS chat_messages (
+            id SERIAL PRIMARY KEY,
+            sender_id VARCHAR(50) NOT NULL,
+            receiver_id VARCHAR(50) NOT NULL,
+            sender_role VARCHAR(50) NOT NULL,
+            message TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        await conn.execute(
+          Sql.named(
+            'INSERT INTO chat_messages (sender_id, receiver_id, sender_role, message) '
+            'VALUES (@sid, @rid, @role, @msg)'
+          ),
+          parameters: {
+            'sid': senderId,
+            'rid': receiverId,
+            'role': senderRole,
+            'msg': message,
+          },
         );
         await conn.close();
         return true;
