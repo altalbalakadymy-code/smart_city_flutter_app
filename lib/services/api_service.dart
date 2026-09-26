@@ -134,11 +134,10 @@ class ApiService {
     return _inMemoryBusinesses.where((b) => b['type'] == category).toList();
   }
 
-  // 4. إضافة منشأة أو حجز جديد (تم الربط مع جدول الحجوزات آلياً)
+  // 4. إضافة منشأة أو حجز جديد مع الربط التلقائي بجدول الحجوزات
   static Future<bool> addBusinessItem(Map<String, dynamic> item) async {
     _inMemoryBusinesses.insert(0, item);
 
-    // إذا كان العنصر يحتوي كود تذكرة qr_pass احفظه فوراً في الحجوزات
     if (item.containsKey('qr_pass')) {
       await saveBooking(
         userId: item['user_id']?.toString() ?? '1',
@@ -208,7 +207,6 @@ class ApiService {
     return [
       {'id': 1, 'route_name': 'صنعاء - عدن', 'company_name': 'شركة النورس للنقل الدولي VIP', 'departure_time': '07:30 صباحاً', 'price': 15000.0, 'bus_type': 'مرسيدس VIP ملكي'},
       {'id': 2, 'route_name': 'صنعاء - مأرب', 'company_name': 'سفريات البرق السريع', 'departure_time': '08:00 صباحاً', 'price': 12000.0, 'bus_type': 'حافلة حديثة مكيفة'},
-      {'id': 3, 'route_name': 'صنعاء - المكلا', 'company_name': 'شركة الرويشان للنقل البري', 'departure_time': '06:00 صباحاً', 'price': 25000.0, 'bus_type': 'VIP درجة أولى'},
     ];
   }
 
@@ -279,7 +277,6 @@ class ApiService {
     return [
       {'id': 1, 'name': 'د. أحمد شرف الدين', 'specialty': 'باطنية وقلب', 'clinic_name': 'مستشفى الشفاء التخصصي', 'consultation_fee': 8000.0, 'available_slots': ['04:00 م', '04:30 م', '05:00 م'], 'phone': '771234567'},
       {'id': 2, 'name': 'د. سامية عبدالرحمن', 'specialty': 'طب وجراحة العيون', 'clinic_name': 'مركز النور للعيون', 'consultation_fee': 7000.0, 'available_slots': ['09:00 ص', '09:30 ص', '10:00 ص'], 'phone': '772223344'},
-      {'id': 3, 'name': 'د. فيصل المعمري', 'specialty': 'جراحة العظام والمفاصل', 'clinic_name': 'المركز الاستشاري للعظام', 'consultation_fee': 9000.0, 'available_slots': ['05:00 م', '05:40 م', '06:20 م'], 'phone': '773334455'},
     ];
   }
 
@@ -1024,6 +1021,70 @@ class ApiService {
         await conn.execute(
           Sql.named('UPDATE service_bookings SET status = @st WHERE id = @bid'),
           parameters: {'st': 'CANCELLED', 'bid': intId},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== التحقق ومسح التذاكر (QR Scanner) =====================
+  static Future<Map<String, dynamic>?> verifyTicket(String qrPass) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        final res = await conn.execute(
+          Sql.named(
+            'SELECT id, user_id, business_name, category, total_price, qr_pass, status, created_at '
+            'FROM service_bookings '
+            'WHERE qr_pass = @qr'
+          ),
+          parameters: {'qr': qrPass.trim()},
+        );
+        await conn.close();
+
+        if (res.isNotEmpty) {
+          final r = res.first;
+          return {
+            'id': r[0].toString(),
+            'user_id': r[1].toString(),
+            'business_name': r[2].toString(),
+            'category': r[3].toString(),
+            'total_price': (r[4] as num).toDouble(),
+            'qr_pass': r[5].toString(),
+            'status': r[6].toString(),
+            'created_at': r[7]?.toString() ?? 'الآن',
+          };
+        }
+      } catch (_) {}
+    }
+
+    try {
+      final local = _inMemoryBookings.firstWhere(
+        (b) => b['qr_pass'].toString().trim().toUpperCase() == qrPass.trim().toUpperCase(),
+      );
+      return local;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  static Future<bool> redeemTicket(String qrPass) async {
+    for (var b in _inMemoryBookings) {
+      if (b['qr_pass'].toString().trim().toUpperCase() == qrPass.trim().toUpperCase()) {
+        b['status'] = 'REDEEMED';
+      }
+    }
+
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute(
+          Sql.named('UPDATE service_bookings SET status = @st WHERE qr_pass = @qr'),
+          parameters: {'st': 'REDEEMED', 'qr': qrPass.trim()},
         );
         await conn.close();
         return true;
