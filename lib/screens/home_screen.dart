@@ -15,6 +15,7 @@ import 'tourism_screen.dart';
 import 'car_rental_screen.dart';
 import 'real_estate_screen.dart';
 import 'my_bookings_screen.dart';
+import 'budget_matcher_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -99,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // بطاقة المستخدم
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -154,8 +156,44 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
+            // بطاقة محرك مطابقة الميزانية الذكي (Smart Budget Matcher)
+            InkWell(
+              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BudgetMatcherScreen(currentUser: user))),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(colors: [Color(0xFF059669), Color(0xFF10B981)]),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(color: const Color(0xFF10B981).withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4)),
+                  ],
+                ),
+                child: const Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.white,
+                      child: Icon(Icons.calculate_outlined, color: Color(0xFF059669)),
+                    ),
+                    SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('محرك مطابقة الميزانية الذكي (AI Matcher)', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                          Text('حدد ميزانيتك المتوفرة وسيقوم النظام بفرز وترشيح أوفر الحزم لك', style: TextStyle(color: Colors.white70, fontSize: 11)),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.arrow_forward_ios, color: Colors.white, size: 14),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // بطاقة الميتافيرس
             InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MetaverseScreen())),
               child: Container(
