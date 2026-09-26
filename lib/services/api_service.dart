@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 import 'package:postgres/postgres.dart';
 import '../core/api_config.dart';
 
@@ -17,7 +19,42 @@ class ApiService {
     );
   }
 
-  // جلب كافة المنشآت والأنشطة للقطاعات الـ 9
+  // فحص حالة السيرفر التي تطلبها home_screen
+  static Future<bool> checkServerHealth() async {
+    try {
+      final conn = await _getConnection();
+      await conn.close();
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // إضافة بائع جديد التي تطلبها create_vendor_screen
+  static Future<bool> createVendor(Map<String, dynamic> vendorData) async {
+    Connection? connection;
+    try {
+      connection = await _getConnection();
+      await connection.execute(
+        Sql.named(
+          'INSERT INTO businesses (name, type, phone, is_active) '
+          'VALUES (@name, @type, @phone, true)'
+        ),
+        parameters: {
+          'name': vendorData['name'] ?? 'متجر جديد',
+          'type': vendorData['category'] ?? vendorData['type'] ?? 'STORE',
+          'phone': vendorData['phone'] ?? '',
+        },
+      );
+      return true;
+    } catch (e) {
+      return false;
+    } finally {
+      await connection?.close();
+    }
+  }
+
+  // جلب كافة المنشآت
   static Future<List<Map<String, dynamic>>> fetchBusinesses() async {
     Connection? connection;
     try {
@@ -41,66 +78,6 @@ class ApiService {
       }).toList();
     } catch (e) {
       return [];
-    } finally {
-      await connection?.close();
-    }
-  }
-
-  // جلب الكتالوج والسلع التابعة لمنشأة معينة
-  static Future<List<Map<String, dynamic>>> fetchCatalogByBusiness(int businessId) async {
-    Connection? connection;
-    try {
-      connection = await _getConnection();
-      final result = await connection.execute(
-        Sql.named('SELECT id, business_id, title, price, vip_discount_pct, shelf_id FROM catalog_services WHERE business_id = @id'),
-        parameters: {'id': businessId},
-      );
-
-      return result.map((row) {
-        return {
-          'id': row[0],
-          'business_id': row[1],
-          'title': row[2],
-          'price': row[3],
-          'vip_discount_pct': row[4],
-          'shelf_id': row[5],
-        };
-      }).toList();
-    } catch (e) {
-      return [];
-    } finally {
-      await connection?.close();
-    }
-  }
-
-  // إضافة حجز وتذكرة QR مؤكدة
-  static Future<bool> createBooking({
-    required int userId,
-    required int businessId,
-    required String category,
-    required double totalPrice,
-    required String qrPass,
-  }) async {
-    Connection? connection;
-    try {
-      connection = await _getConnection();
-      await connection.execute(
-        Sql.named(
-          'INSERT INTO service_bookings (user_id, business_id, category, total_price, qr_pass, status) '
-          'VALUES (@userId, @businessId, @category, @totalPrice, @qrPass, @status)'
-        ),
-        parameters: {
-          'userId': userId,
-          'businessId': businessId,
-          'category': category,
-          'totalPrice': totalPrice,
-          'qrPass': qrPass,
-          'status': 'CONFIRMED',
-        },
-      );
-      return true;
-    } catch (e) {
-      return false;
     } finally {
       await connection?.close();
     }
