@@ -3,7 +3,7 @@ import 'package:postgres/postgres.dart';
 import '../core/api_config.dart';
 
 class ApiService {
-  // بيانات افتراضية للمنشآت التسع
+  // بيانات افتراضية للمنشآت التسع لضمان استقرار التطبيق دائماً
   static final List<Map<String, dynamic>> _inMemoryBusinesses = [
     {
       'id': 1,
@@ -213,7 +213,11 @@ class ApiService {
       try {
         await conn.execute(
           Sql.named('INSERT INTO businesses (name, type, phone, is_active) VALUES (@name, @type, @phone, true)'),
-          parameters: {'name': item['name'] ?? item['business_name'] ?? 'نشاط جديد', 'type': item['type'] ?? item['category'] ?? 'STORE', 'phone': item['phone'] ?? '770000000'},
+          parameters: {
+            'name': item['name'] ?? item['business_name'] ?? 'نشاط جديد',
+            'type': item['type'] ?? item['category'] ?? 'STORE',
+            'phone': item['phone'] ?? '770000000',
+          },
         );
         await conn.close();
       } catch (_) {}
@@ -233,7 +237,6 @@ class ApiService {
 
   // ===================== قطاع باصات النقل =====================
 
-  // جلب كافة مسارات الباصات من السيرفر
   static Future<List<Map<String, dynamic>>> fetchBusRoutes() async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -293,7 +296,6 @@ class ApiService {
     ];
   }
 
-  // إضافة مسار رحلة جديد وحفظه في السيرفر
   static Future<bool> addBusRoute({
     required String routeName,
     required String companyName,
@@ -339,7 +341,6 @@ class ApiService {
 
   // ===================== قطاع العيادات والأطباء =====================
 
-  // جلب قائمة الأطباء والعيادات من السيرفر
   static Future<List<Map<String, dynamic>>> fetchDoctors() async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -414,7 +415,6 @@ class ApiService {
     ];
   }
 
-  // إضافة طبيب جديد في قاعدة البيانات
   static Future<bool> addDoctor({
     required String name,
     required String specialty,
@@ -450,6 +450,146 @@ class ApiService {
             'fee': fee,
             'slots': slots,
             'phone': phone,
+          },
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== قطاع وايتات مياه الشرب =====================
+
+  static Future<List<Map<String, dynamic>>> fetchWaterTankers() async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS water_tankers (
+            id SERIAL PRIMARY KEY,
+            driver_name VARCHAR(120) NOT NULL,
+            station_name VARCHAR(150) NOT NULL,
+            water_type VARCHAR(100) NOT NULL,
+            capacity_liters INT NOT NULL,
+            price NUMERIC(10, 2) NOT NULL,
+            phone VARCHAR(50) NOT NULL,
+            latitude NUMERIC(10, 6) NOT NULL,
+            longitude NUMERIC(10, 6) NOT NULL
+          )
+        ''');
+
+        final res = await conn.execute(
+          Sql.named('SELECT id, driver_name, station_name, water_type, capacity_liters, price, phone, latitude, longitude FROM water_tankers ORDER BY id DESC'),
+        );
+        await conn.close();
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'driver_name': r[1].toString(),
+            'station_name': r[2].toString(),
+            'water_type': r[3].toString(),
+            'capacity_liters': r[4] as int,
+            'price': (r[5] as num).toDouble(),
+            'phone': r[6]?.toString() ?? '770000000',
+            'latitude': (r[7] as num).toDouble(),
+            'longitude': (r[8] as num).toDouble(),
+          }).toList();
+        }
+      } catch (_) {}
+    }
+
+    return [
+      {
+        'id': 1,
+        'driver_name': 'أبو صخر الماوري',
+        'station_name': 'محطة آبار حِدة العذبة',
+        'water_type': 'مياه شرب نقية مكررة',
+        'capacity_liters': 6000,
+        'price': 18000.0,
+        'phone': '775112233',
+        'latitude': 15.3400,
+        'longitude': 44.1800,
+      },
+      {
+        'id': 2,
+        'driver_name': 'عبدالكريم الصرابي',
+        'station_name': 'مشروع مياه الروضة النقي',
+        'water_type': 'مياه غيلية عذبة طبيعية',
+        'capacity_liters': 3000,
+        'price': 10000.0,
+        'phone': '774998877',
+        'latitude': 15.3900,
+        'longitude': 44.2100,
+      },
+      {
+        'id': 3,
+        'driver_name': 'صالح القحوم',
+        'station_name': 'مياه الكوثر الصافية',
+        'water_type': 'مياه شرب نقية مكررة',
+        'capacity_liters': 10000,
+        'price': 28000.0,
+        'phone': '771665544',
+        'latitude': 15.3600,
+        'longitude': 44.1950,
+      },
+      {
+        'id': 4,
+        'driver_name': 'يحيى الحمزي',
+        'station_name': 'صهاريج الوادي للاستخدام المنزلي',
+        'water_type': 'مياه استخدام منزلي وغسيل',
+        'capacity_liters': 6000,
+        'price': 13000.0,
+        'phone': '773001122',
+        'latitude': 15.3300,
+        'longitude': 44.2300,
+      },
+    ];
+  }
+
+  static Future<bool> addWaterTanker({
+    required String driverName,
+    required String stationName,
+    required String waterType,
+    required int capacity,
+    required double price,
+    required String phone,
+    required double lat,
+    required double lng,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS water_tankers (
+            id SERIAL PRIMARY KEY,
+            driver_name VARCHAR(120) NOT NULL,
+            station_name VARCHAR(150) NOT NULL,
+            water_type VARCHAR(100) NOT NULL,
+            capacity_liters INT NOT NULL,
+            price NUMERIC(10, 2) NOT NULL,
+            phone VARCHAR(50) NOT NULL,
+            latitude NUMERIC(10, 6) NOT NULL,
+            longitude NUMERIC(10, 6) NOT NULL
+          )
+        ''');
+
+        await conn.execute(
+          Sql.named(
+            'INSERT INTO water_tankers (driver_name, station_name, water_type, capacity_liters, price, phone, latitude, longitude) '
+            'VALUES (@driver, @station, @type, @cap, @price, @phone, @lat, @lng)'
+          ),
+          parameters: {
+            'driver': driverName,
+            'station': stationName,
+            'type': waterType,
+            'cap': capacity,
+            'price': price,
+            'phone': phone,
+            'lat': lat,
+            'lng': lng,
           },
         );
         await conn.close();
