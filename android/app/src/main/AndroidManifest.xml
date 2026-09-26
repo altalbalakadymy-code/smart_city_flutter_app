@@ -1,5 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- إذن الاتصال بالإنترنت لقاعدة البيانات السحابية PostgreSQL -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
@@ -8,7 +7,7 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- الإلزام بالترقية لـ Android v2 embedding لمنع فشل البناء -->
+        <!-- تفعيل v2 embedding الإلزامي لمنع فشل البناء -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
