@@ -8,6 +8,8 @@ import 'transport_screen.dart';
 import 'healthcare_screen.dart';
 import 'water_tanker_screen.dart';
 import 'restaurant_screen.dart';
+import 'retail_screen.dart';
+import 'qat_market_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -179,12 +181,12 @@ class _HomeScreenState extends State<HomeScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildSectorItem('المتاجر', Icons.storefront, Colors.indigo, SectorsScreen(currentUser: user)),
+                _buildSectorItem('المتاجر', Icons.storefront, Colors.indigo, RetailScreen(currentUser: user)),
                 _buildSectorItem('المطاعم', Icons.restaurant, Colors.orange, RestaurantScreen(currentUser: user)),
                 _buildSectorItem('العيادات', Icons.medical_services, Colors.teal, HealthcareScreen(currentUser: user)),
                 _buildSectorItem('باصات السفر', Icons.directions_bus, Colors.blue, TransportScreen(currentUser: user)),
                 _buildSectorItem('وايتات مياه', Icons.water_drop, Colors.cyan, WaterTankerScreen(currentUser: user)),
-                _buildSectorItem('سوق القات', Icons.eco, Colors.green, SectorsScreen(currentUser: user)),
+                _buildSectorItem('سوق القات', Icons.eco, Colors.green, QatMarketScreen(currentUser: user)),
                 _buildSectorItem('الفنادق', Icons.hotel, Colors.deepPurple, SectorsScreen(currentUser: user)),
                 _buildSectorItem('تأجير سيارات', Icons.directions_car, Colors.amber.shade800, SectorsScreen(currentUser: user)),
                 _buildSectorItem('العقارات', Icons.home_work, Colors.blueGrey, SectorsScreen(currentUser: user)),
