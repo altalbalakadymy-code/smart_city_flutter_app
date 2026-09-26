@@ -7,7 +7,6 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
-        <!-- تفعيل v2 embedding الإلزامي لمنع فشل البناء -->
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
