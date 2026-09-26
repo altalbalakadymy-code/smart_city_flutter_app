@@ -1,5 +1,5 @@
-name: smart_city_flutter_app
-description: "A new Flutter project for Smart City 3D platform."
+name: smart_city_app
+description: "A multi-sector Smart City platform built with Flutter."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -10,9 +10,9 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  http: ^1.2.0
+  cupertino_icons: ^1.0.6
   postgres: ^3.1.2
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:
