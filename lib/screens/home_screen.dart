@@ -12,6 +12,7 @@ import 'retail_screen.dart';
 import 'qat_market_screen.dart';
 import 'tourism_screen.dart';
 import 'car_rental_screen.dart';
+import 'real_estate_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -191,7 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 _buildSectorItem('سوق القات', Icons.eco, Colors.green, QatMarketScreen(currentUser: user)),
                 _buildSectorItem('الفنادق', Icons.hotel, Colors.deepPurple, TourismScreen(currentUser: user)),
                 _buildSectorItem('تأجير سيارات', Icons.directions_car, Colors.amber.shade800, CarRentalScreen(currentUser: user)),
-                _buildSectorItem('العقارات', Icons.home_work, Colors.blueGrey, SectorsScreen(currentUser: user)),
+                _buildSectorItem('العقارات', Icons.home_work, Colors.blueGrey, RealEstateScreen(currentUser: user)),
               ],
             ),
           ],
