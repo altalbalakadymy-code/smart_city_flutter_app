@@ -189,7 +189,6 @@ class ApiService {
     return [
       {'id': 1, 'route_name': 'صنعاء - عدن', 'company_name': 'شركة النورس للنقل الدولي VIP', 'departure_time': '07:30 صباحاً', 'price': 15000.0, 'bus_type': 'مرسيدس VIP ملكي'},
       {'id': 2, 'route_name': 'صنعاء - مأرب', 'company_name': 'سفريات البرق السريع', 'departure_time': '08:00 صباحاً', 'price': 12000.0, 'bus_type': 'حافلة حديثة مكيفة'},
-      {'id': 3, 'route_name': 'صنعاء - المكلا', 'company_name': 'شركة الرويشان للنقل البري', 'departure_time': '06:00 صباحاً', 'price': 25000.0, 'bus_type': 'VIP درجة أولى'},
     ];
   }
 
@@ -258,9 +257,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {'id': 1, 'name': 'د. أحمد شرف الدين', 'specialty': 'باطنية وقلب', 'clinic_name': 'مستشفى الشفاء التخصصي', 'consultation_fee': 8000.0, 'available_slots': ['04:00 م', '04:30 م', '05:00 م', '05:30 م'], 'phone': '771234567'},
-      {'id': 2, 'name': 'د. سامية عبدالرحمن', 'specialty': 'طب وجراحة العيون', 'clinic_name': 'مركز النور للعيون', 'consultation_fee': 7000.0, 'available_slots': ['09:00 ص', '09:30 ص', '10:00 ص'], 'phone': '772223344'},
-      {'id': 3, 'name': 'د. فيصل المعمري', 'specialty': 'جراحة العظام والمفاصل', 'clinic_name': 'المركز الاستشاري للعظام', 'consultation_fee': 9000.0, 'available_slots': ['05:00 م', '05:40 م', '06:20 م'], 'phone': '773334455'},
+      {'id': 1, 'name': 'د. أحمد شرف الدين', 'specialty': 'باطنية وقلب', 'clinic_name': 'مستشفى الشفاء التخصصي', 'consultation_fee': 8000.0, 'available_slots': ['04:00 م', '04:30 م', '05:00 م'], 'phone': '771234567'},
     ];
   }
 
@@ -336,7 +333,6 @@ class ApiService {
     }
     return [
       {'id': 1, 'driver_name': 'أبو صخر الماوري', 'station_name': 'محطة آبار حِدة العذبة', 'water_type': 'مياه شرب نقية مكررة', 'capacity_liters': 6000, 'price': 18000.0, 'phone': '775112233', 'latitude': 15.3400, 'longitude': 44.1800},
-      {'id': 2, 'driver_name': 'عبدالكريم الصرابي', 'station_name': 'مشروع مياه الروضة النقي', 'water_type': 'مياه غيلية عذبة طبيعية', 'capacity_liters': 3000, 'price': 10000.0, 'phone': '774998877', 'latitude': 15.3900, 'longitude': 44.2100},
     ];
   }
 
@@ -412,7 +408,6 @@ class ApiService {
     }
     return [
       {'id': 1, 'restaurant_name': 'مطعم الشيباني الملكي', 'meal_title': 'فحسة لحم بلدي مع الملوج الحار', 'category': 'شعبي يمني', 'price': 4500.0, 'prep_time_mins': 15, 'phone': '777111222'},
-      {'id': 2, 'restaurant_name': 'مطاعم الخطيب السياحية', 'meal_title': 'نصف حبة مندي لحم مع الرز البسمتي', 'category': 'مشويات ومندي', 'price': 6500.0, 'prep_time_mins': 20, 'phone': '777333444'},
     ];
   }
 
@@ -489,7 +484,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {'id': 1, 'store_name': 'عالم الإلكترونيات الذكي', 'store_category': 'إلكترونيات وهواتف', 'product_title': 'هاتف سامسونج الترا 256 جيجا', 'description': 'نسخة الشرق الأوسط شريحتين مع ضمان سنة كاملة وشاحن سريع أصلي.', 'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80', 'price': 480000.0, 'stock_quantity': 4, 'hold_hours': 24, 'phone': '771122334'},
+      {'id': 1, 'store_name': 'عالم الإلكترونيات الذكي', 'store_category': 'إلكترونيات وهواتف', 'product_title': 'هاتف سامسونج الترا 256 جيجا', 'description': 'نسخة الشرق الأوسط.', 'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80', 'price': 480000.0, 'stock_quantity': 4, 'hold_hours': 24, 'phone': '771122334'},
     ];
   }
 
@@ -653,7 +648,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {'id': 1, 'hotel_name': 'فندق الأفق الملكي VIP', 'room_type': 'جناح ملكي تنفيذي', 'location': 'حي حِدة', 'description': 'شامل الإفطار الصباحي والإنترنت.', 'image_url': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80', 'price_per_night': 45000.0, 'available_rooms': 3, 'phone': '778111222'},
+      {'id': 1, 'hotel_name': 'فندق الأفق الملكي VIP', 'room_type': 'جناح ملكي تنفيذي', 'location': 'حي حِدة', 'description': 'شامل الإفطار الصباحي.', 'image_url': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80', 'price_per_night': 45000.0, 'available_rooms': 3, 'phone': '778111222'},
     ];
   }
 
@@ -734,54 +729,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {
-        'id': 1,
-        'agency_name': 'شركة الصقر لتأجير السيارات الحديثة',
-        'car_model': 'تويوتا لاندكروزر VXR فل كامل',
-        'car_category': 'دفع رباعي عائلي (4x4)',
-        'model_year': 2024,
-        'description': 'سيارة عائلية 7 مقاعد، مكيف مركزي، شاشات خلفية، تأمين شامل، ومجهزة للرحلات الطويلة.',
-        'image_url': 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?w=500&q=80',
-        'price_per_day': 65000.0,
-        'available_units': 3,
-        'phone': '776111222',
-      },
-      {
-        'id': 2,
-        'agency_name': 'معرض اليمامة لتأجير السيارات',
-        'car_model': 'هيونداي إلنترا سمارت بلس',
-        'car_category': 'سيدان اقتصادي',
-        'model_year': 2023,
-        'description': 'اقتصادية جداً في البنزين، جير أوتوماتيك، كاميرا خلفية، وبلوتوث. مناسبة لتنقلات المدينة.',
-        'image_url': 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=500&q=80',
-        'price_per_day': 22000.0,
-        'available_units': 5,
-        'phone': '776333444',
-      },
-      {
-        'id': 3,
-        'agency_name': 'العروبة لتأجير السيارات الفارهة',
-        'car_model': 'مرسيدس بنز E-Class VIP',
-        'car_category': 'سيارات VIP فاخرة',
-        'model_year': 2024,
-        'description': 'فخامة رجال الأعمال، مقاعد جلدية فاخرة تبريد وتسخين، عزل صوتي متكامل وسائق حسب الطلب.',
-        'image_url': 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500&q=80',
-        'price_per_day': 95000.0,
-        'available_units': 2,
-        'phone': '776555666',
-      },
-      {
-        'id': 4,
-        'agency_name': 'شركة الأندلس للخدمات السياحية',
-        'car_model': 'تويوتا هايس باص سياحي سقف عالي',
-        'car_category': 'باصات عائلية وسياحية',
-        'model_year': 2022,
-        'description': '14 راكب، تكييف أمامي وخلفي قوي، مقاعد مريحة متحركة، مثالي للرحلات السياحية والتنقل الجماعي.',
-        'image_url': 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&q=80',
-        'price_per_day': 40000.0,
-        'available_units': 4,
-        'phone': '776777888',
-      },
+      {'id': 1, 'agency_name': 'شركة الصقر لتأجير السيارات', 'car_model': 'تويوتا لاندكروزر VXR', 'car_category': 'دفع رباعي عائلي (4x4)', 'model_year': 2024, 'description': 'تأمين شامل.', 'image_url': 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?w=500&q=80', 'price_per_day': 65000.0, 'available_units': 3, 'phone': '776111222'},
     ];
   }
 
@@ -814,19 +762,176 @@ class ApiService {
           )
         ''');
         await conn.execute(
+          Sql.named('INSERT INTO rental_cars (agency_name, car_model, car_category, model_year, description, image_url, price_per_day, available_units, phone) VALUES (@agn, @mod, @cat, @yr, @desc, @img, @price, @units, @phone)'),
+          parameters: {'agn': agencyName, 'mod': carModel, 'cat': carCategory, 'yr': modelYear, 'desc': description, 'img': imageUrl, 'price': pricePerDay, 'units': availableUnits, 'phone': phone},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== قطاع العقارات والمنازل (Real Estate & Housing) =====================
+  static Future<List<Map<String, dynamic>>> fetchRealEstateProperties() async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS real_estate_properties (
+            id SERIAL PRIMARY KEY,
+            broker_name VARCHAR(150) NOT NULL,
+            property_title VARCHAR(150) NOT NULL,
+            listing_type VARCHAR(50) NOT NULL,
+            property_category VARCHAR(100) NOT NULL,
+            location_neighborhood VARCHAR(150) NOT NULL,
+            bedrooms INT NOT NULL,
+            bathrooms INT NOT NULL,
+            area_sqm INT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price NUMERIC(12, 2) NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        final res = await conn.execute(Sql.named('SELECT id, broker_name, property_title, listing_type, property_category, location_neighborhood, bedrooms, bathrooms, area_sqm, description, image_url, price, phone FROM real_estate_properties ORDER BY id DESC'));
+        await conn.close();
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'broker_name': r[1].toString(),
+            'property_title': r[2].toString(),
+            'listing_type': r[3].toString(),
+            'property_category': r[4].toString(),
+            'location_neighborhood': r[5].toString(),
+            'bedrooms': r[6] as int,
+            'bathrooms': r[7] as int,
+            'area_sqm': r[8] as int,
+            'description': r[9].toString(),
+            'image_url': r[10].toString(),
+            'price': (r[11] as num).toDouble(),
+            'phone': r[12]?.toString() ?? '770000000',
+          }).toList();
+        }
+      } catch (_) {}
+    }
+    return [
+      {
+        'id': 1,
+        'broker_name': 'مكتب المستشار العقاري المعتمد',
+        'property_title': 'شقة عائلية فاخرة سوبر ديلوكس دور ثالث',
+        'listing_type': 'إيجار شهري',
+        'property_category': 'شقق سكنية عائلية',
+        'location_neighborhood': 'حي الأصبحي - شارع المقالح',
+        'bedrooms': 4,
+        'bathrooms': 3,
+        'area_sqm': 185,
+        'description': 'مجلس مستقل مع حمام ومدخلين، صالة واسعة، مطبخ نظام أمريكي، مصعد شغال، وحراسة مدار الساعة.',
+        'image_url': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500&q=80',
+        'price': 160000.0,
+        'phone': '771888999',
+      },
+      {
+        'id': 2,
+        'broker_name': 'دار الأمان للاستثمار العقاري',
+        'property_title': 'فيلا مستقلة مودرن حديثة البناء حجر هيلاني',
+        'listing_type': 'للبيع قطعي',
+        'property_category': 'فلل وقصور مستقلة',
+        'location_neighborhood': 'بيت بوس - حي الشباب الراقي',
+        'bedrooms': 6,
+        'bathrooms': 5,
+        'area_sqm': 340,
+        'description': 'مبنية على 6 لِبن حر، حوش يتسع لـ 3 سيارات، مسبح خاص، خزان أرضي كبير، واجهات زجاجية عازلة.',
+        'image_url': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&q=80',
+        'price': 48000000.0,
+        'phone': '772777666',
+      },
+      {
+        'id': 3,
+        'broker_name': 'مجموعة النخبة للوساطة والتسويق',
+        'property_title': 'مكتب إداري ومركز تجاري واجهة رئيسية',
+        'listing_type': 'إيجار سنوي',
+        'property_category': 'محلات ومكاتب تجارية',
+        'location_neighborhood': 'شارع الزبيري - برج التجارة العالمي',
+        'bedrooms': 3,
+        'bathrooms': 2,
+        'area_sqm': 120,
+        'description': 'موقع استراتيجي للشركات والمنظمات، تكييف مركزي، شبكة ألياف ضوئية، ومولد كهربائي متواصل.',
+        'image_url': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80',
+        'price': 350000.0,
+        'phone': '773666555',
+      },
+      {
+        'id': 4,
+        'broker_name': 'مكتب العاصمة للخدمات العقارية',
+        'property_title': 'قطعة أرض استثمارية حر جاهزة للبناء فوراً',
+        'listing_type': 'للبيع قطعي',
+        'property_category': 'أراضي استثمارية وسكنية',
+        'location_neighborhood': 'حي ارتل الجديد - جوار الخط الرئيسي',
+        'bedrooms': 0,
+        'bathrooms': 0,
+        'area_sqm': 220,
+        'description': 'مساحة 5 لِبن شوارع معتمدة 14 متر، مسجلة بالسجل العقاري خالية من أي نزاع، كهرباء وماء متوفر.',
+        'image_url': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500&q=80',
+        'price': 15000000.0,
+        'phone': '774555444',
+      },
+    ];
+  }
+
+  static Future<bool> addRealEstateProperty({
+    required String brokerName,
+    required String propertyTitle,
+    required String listingType,
+    required String propertyCategory,
+    required String locationNeighborhood,
+    required int bedrooms,
+    required int bathrooms,
+    required int areaSqm,
+    required String description,
+    required String imageUrl,
+    required double price,
+    required String phone,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS real_estate_properties (
+            id SERIAL PRIMARY KEY,
+            broker_name VARCHAR(150) NOT NULL,
+            property_title VARCHAR(150) NOT NULL,
+            listing_type VARCHAR(50) NOT NULL,
+            property_category VARCHAR(100) NOT NULL,
+            location_neighborhood VARCHAR(150) NOT NULL,
+            bedrooms INT NOT NULL,
+            bathrooms INT NOT NULL,
+            area_sqm INT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price NUMERIC(12, 2) NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        await conn.execute(
           Sql.named(
-            'INSERT INTO rental_cars (agency_name, car_model, car_category, model_year, description, image_url, price_per_day, available_units, phone) '
-            'VALUES (@agn, @mod, @cat, @yr, @desc, @img, @price, @units, @phone)'
+            'INSERT INTO real_estate_properties (broker_name, property_title, listing_type, property_category, location_neighborhood, bedrooms, bathrooms, area_sqm, description, image_url, price, phone) '
+            'VALUES (@brk, @title, @type, @cat, @loc, @beds, @baths, @area, @desc, @img, @price, @phone)'
           ),
           parameters: {
-            'agn': agencyName,
-            'mod': carModel,
-            'cat': carCategory,
-            'yr': modelYear,
+            'brk': brokerName,
+            'title': propertyTitle,
+            'type': listingType,
+            'cat': propertyCategory,
+            'loc': locationNeighborhood,
+            'beds': bedrooms,
+            'baths': bathrooms,
+            'area': areaSqm,
             'desc': description,
             'img': imageUrl,
-            'price': pricePerDay,
-            'units': availableUnits,
+            'price': price,
             'phone': phone,
           },
         );
