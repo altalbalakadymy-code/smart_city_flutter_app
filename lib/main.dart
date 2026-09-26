@@ -1,29 +1,50 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const SmartCityApp());
+  
+  // قراءة بيانات الجلسة المخزنة محلياً
+  final prefs = await SharedPreferences.getInstance();
+  final userString = prefs.getString('saved_user_session');
+  
+  Map<String, dynamic>? initialUser;
+  if (userString != null && userString.isNotEmpty) {
+    try {
+      initialUser = jsonDecode(userString) as Map<String, dynamic>;
+    } catch (_) {
+      initialUser = null;
+    }
+  }
+
+  runApp(SmartCityApp(initialUser: initialUser));
 }
 
 class SmartCityApp extends StatelessWidget {
-  const SmartCityApp({super.key});
+  final Map<String, dynamic>? initialUser;
+
+  const SmartCityApp({super.key, this.initialUser});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'المدينة الذكية',
+      title: 'المدينة الذكية الموحدة',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        scaffoldBackgroundColor: const Color(0xFFF1F5F9),
-        primaryColor: const Color(0xFF0F172A),
+        fontFamily: 'Tajawal',
         colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF06B6D4),
+          seedColor: const Color(0xFF0F172A),
           primary: const Color(0xFF0F172A),
+          secondary: const Color(0xFF06B6D4),
         ),
-        useMaterial3: true,
+        scaffoldBackgroundColor: const Color(0xFFF8FAFC),
       ),
-      home: const LoginScreen(),
+      home: initialUser != null
+          ? HomeScreen(currentUser: initialUser)
+          : const LoginScreen(),
     );
   }
 }
