@@ -575,54 +575,8 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {
-        'id': 1,
-        'market_name': 'سوق مذبح المركزي النموذجي',
-        'vendor_name': 'أبو عادل الهمداني',
-        'stall_number': 'بسطة 14 - الجناح الشرقي',
-        'qat_type': 'همداني غيلي سوبر',
-        'description': 'قطفة فجر اليوم، رطب صافي ورأس حبة ناعم جداً مروي ماء بئر عذب.',
-        'image_url': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80',
-        'price': 12000.0,
-        'available_bundles': 5,
-        'phone': '771444555',
-      },
-      {
-        'id': 2,
-        'market_name': 'سوق مذبح المركزي النموذجي',
-        'vendor_name': 'الحاج مصلح الصبري',
-        'stall_number': 'بسطة 22 - مدخل السوق الرئيسي',
-        'qat_type': 'صبري ممتاز رطب',
-        'description': 'باقة صبري بلدي درجة أولى حبة خضراء حالية خالية من أي رش.',
-        'image_url': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&q=80',
-        'price': 8000.0,
-        'available_bundles': 8,
-        'phone': '772555666',
-      },
-      {
-        'id': 3,
-        'market_name': 'سوق شميلة الموحد',
-        'vendor_name': 'عبدالرحمن الأرحبي',
-        'stall_number': 'موقع 7 - الممر الأوسط',
-        'qat_type': 'أرحبي ذيباني مختار',
-        'description': 'قات أرحبي نخب أول قاع البئر، حبة ثقيلة تعميرة ممتازة.',
-        'image_url': 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80',
-        'price': 15000.0,
-        'available_bundles': 4,
-        'phone': '773666777',
-      },
-      {
-        'id': 4,
-        'market_name': 'سوق السنينة النموذجي',
-        'vendor_name': 'جميل الحرازي',
-        'stall_number': 'ركن 3 - جوار الإدارة',
-        'qat_type': 'حرازي فاخر قطفة ندى',
-        'description': 'قطفة مبكرة حبة رطبة خفيفة ومذاق نقي جداً، تثبيت فوري للاستلام.',
-        'image_url': 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=500&q=80',
-        'price': 9500.0,
-        'available_bundles': 6,
-        'phone': '774777888',
-      },
+      {'id': 1, 'market_name': 'سوق مذبح المركزي النموذجي', 'vendor_name': 'أبو عادل الهمداني', 'stall_number': 'بسطة 14 - الجناح الشرقي', 'qat_type': 'همداني غيلي سوبر', 'description': 'قطفة فجر اليوم، رطب صافي ورأس حبة ناعم جداً مروي ماء بئر عذب.', 'image_url': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', 'price': 12000.0, 'available_bundles': 5, 'phone': '771444555'},
+      {'id': 2, 'market_name': 'سوق مذبح المركزي النموذجي', 'vendor_name': 'الحاج مصلح الصبري', 'stall_number': 'بسطة 22 - مدخل السوق الرئيسي', 'qat_type': 'صبري ممتاز رطب', 'description': 'باقة صبري بلدي درجة أولى حبة خضراء حالية خالية من أي رش.', 'image_url': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&q=80', 'price': 8000.0, 'available_bundles': 8, 'phone': '772555666'},
     ];
   }
 
@@ -655,19 +609,140 @@ class ApiService {
           )
         ''');
         await conn.execute(
+          Sql.named('INSERT INTO qat_vendors_lots (market_name, vendor_name, stall_number, qat_type, description, image_url, price, available_bundles, phone) VALUES (@mkt, @ven, @stl, @type, @desc, @img, @price, @bnd, @phone)'),
+          parameters: {'mkt': marketName, 'ven': vendorName, 'stl': stallNumber, 'type': qatType, 'desc': description, 'img': imageUrl, 'price': price, 'bnd': bundles, 'phone': phone},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== قطاع الفنادق والشقق المفروشة =====================
+  static Future<List<Map<String, dynamic>>> fetchHotelsAndRooms() async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS hotel_rooms (
+            id SERIAL PRIMARY KEY,
+            hotel_name VARCHAR(150) NOT NULL,
+            room_type VARCHAR(100) NOT NULL,
+            location VARCHAR(150) NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price_per_night NUMERIC(10, 2) NOT NULL,
+            available_rooms INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        final res = await conn.execute(Sql.named('SELECT id, hotel_name, room_type, location, description, image_url, price_per_night, available_rooms, phone FROM hotel_rooms ORDER BY id DESC'));
+        await conn.close();
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'hotel_name': r[1].toString(),
+            'room_type': r[2].toString(),
+            'location': r[3].toString(),
+            'description': r[4].toString(),
+            'image_url': r[5].toString(),
+            'price_per_night': (r[6] as num).toDouble(),
+            'available_rooms': r[7] as int,
+            'phone': r[8]?.toString() ?? '770000000',
+          }).toList();
+        }
+      } catch (_) {}
+    }
+    return [
+      {
+        'id': 1,
+        'hotel_name': 'فندق الأفق الملكي VIP',
+        'room_type': 'جناح ملكي تنفيذي مع إطلالة بانورامية',
+        'location': 'حي حِدة - شارع بيروت',
+        'description': 'شامل الإفطار الصباحي، خدمة إنترنت فائق السرعة، صالة جلوس خاصة، وشاشة ذكية 65 بوصة.',
+        'image_url': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80',
+        'price_per_night': 45000.0,
+        'available_rooms': 3,
+        'phone': '778111222',
+      },
+      {
+        'id': 2,
+        'hotel_name': 'أجنحة تاج سبأ الفندقية',
+        'room_type': 'غرفة مزدوجة ديلوكس (سريرين كبار)',
+        'location': 'شارع علي عبدالمغني - وسط العاصمة',
+        'description': 'مكيفة بالكامل مع بوفيه إفطار مجاني وموقف سيارات خاص مراقب بالكاميرات.',
+        'image_url': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=500&q=80',
+        'price_per_night': 28000.0,
+        'available_rooms': 6,
+        'phone': '778333444',
+      },
+      {
+        'id': 3,
+        'hotel_name': 'شقق الفخامة المفروشة الراقية',
+        'room_type': 'شقة مفروشة غرفتين وصالة ومطبخ متكامل',
+        'location': 'حي السبعين - بالقرب من حديقة السبعين',
+        'description': 'مطبخ كامل مجهز، غسالة ملابس أوتوماتيك، شاشة ذكية، استقلالية تامة مناسبة جداً للعائلات.',
+        'image_url': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500&q=80',
+        'price_per_night': 35000.0,
+        'available_rooms': 4,
+        'phone': '778555666',
+      },
+      {
+        'id': 4,
+        'hotel_name': 'فندق قصر البستان السياحي',
+        'room_type': 'غرفة مفردة كلاسيك لرجال الأعمال',
+        'location': 'الستين الجنوبي - فج عطان',
+        'description': 'هدوء تام، مكتب عمل مريح مع إضاءة مناسبة، خدمة تنظيف وكي الملابس على مدار 24 ساعة.',
+        'image_url': 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=500&q=80',
+        'price_per_night': 18000.0,
+        'available_rooms': 8,
+        'phone': '778777888',
+      },
+    ];
+  }
+
+  static Future<bool> addHotelRoom({
+    required String hotelName,
+    required String roomType,
+    required String location,
+    required String description,
+    required String imageUrl,
+    required double pricePerNight,
+    required int availableRooms,
+    required String phone,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS hotel_rooms (
+            id SERIAL PRIMARY KEY,
+            hotel_name VARCHAR(150) NOT NULL,
+            room_type VARCHAR(100) NOT NULL,
+            location VARCHAR(150) NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price_per_night NUMERIC(10, 2) NOT NULL,
+            available_rooms INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        await conn.execute(
           Sql.named(
-            'INSERT INTO qat_vendors_lots (market_name, vendor_name, stall_number, qat_type, description, image_url, price, available_bundles, phone) '
-            'VALUES (@mkt, @ven, @stl, @type, @desc, @img, @price, @bnd, @phone)'
+            'INSERT INTO hotel_rooms (hotel_name, room_type, location, description, image_url, price_per_night, available_rooms, phone) '
+            'VALUES (@hotel, @type, @loc, @desc, @img, @price, @rooms, @phone)'
           ),
           parameters: {
-            'mkt': marketName,
-            'ven': vendorName,
-            'stl': stallNumber,
-            'type': qatType,
+            'hotel': hotelName,
+            'type': roomType,
+            'loc': location,
             'desc': description,
             'img': imageUrl,
-            'price': price,
-            'bnd': bundles,
+            'price': pricePerNight,
+            'rooms': availableRooms,
             'phone': phone,
           },
         );
