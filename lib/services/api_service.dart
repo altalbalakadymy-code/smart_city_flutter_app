@@ -15,6 +15,8 @@ class ApiService {
     {'id': 9, 'name': 'المستشار للعقارات والمنازل', 'type': 'REALTY', 'phone': '771000009', 'details': 'حجز مواعيد معاينة الشقق والفلل والتواصل مع المالك', 'price': 120000.0, 'rating': 4.7},
   ];
 
+  static final List<Map<String, dynamic>> _inMemoryBookings = [];
+
   static Future<Connection?> _tryConnect() async {
     try {
       final endpoint = Endpoint(
@@ -36,6 +38,7 @@ class ApiService {
     }
   }
 
+  // 1. تسجيل مستخدم جديد
   static Future<Map<String, dynamic>?> registerUser({
     required String name,
     required String phone,
@@ -74,6 +77,7 @@ class ApiService {
     };
   }
 
+  // 2. تسجيل الدخول بواسطة الهاتف
   static Future<Map<String, dynamic>?> loginUser(String phone) async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -104,6 +108,7 @@ class ApiService {
     };
   }
 
+  // 3. جلب المنشآت حسب التصنيف
   static Future<List<Map<String, dynamic>>> getBusinessesByCategory(String category) async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -129,6 +134,7 @@ class ApiService {
     return _inMemoryBusinesses.where((b) => b['type'] == category).toList();
   }
 
+  // 4. إضافة منشأة أو حجز جديد
   static Future<bool> addBusinessItem(Map<String, dynamic> item) async {
     _inMemoryBusinesses.insert(0, item);
     final conn = await _tryConnect();
@@ -148,6 +154,7 @@ class ApiService {
     return true;
   }
 
+  // 5. فحص حالة الاتصال
   static Future<bool> checkServerHealth() async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -189,6 +196,7 @@ class ApiService {
     return [
       {'id': 1, 'route_name': 'صنعاء - عدن', 'company_name': 'شركة النورس للنقل الدولي VIP', 'departure_time': '07:30 صباحاً', 'price': 15000.0, 'bus_type': 'مرسيدس VIP ملكي'},
       {'id': 2, 'route_name': 'صنعاء - مأرب', 'company_name': 'سفريات البرق السريع', 'departure_time': '08:00 صباحاً', 'price': 12000.0, 'bus_type': 'حافلة حديثة مكيفة'},
+      {'id': 3, 'route_name': 'صنعاء - المكلا', 'company_name': 'شركة الرويشان للنقل البري', 'departure_time': '06:00 صباحاً', 'price': 25000.0, 'bus_type': 'VIP درجة أولى'},
     ];
   }
 
@@ -258,6 +266,8 @@ class ApiService {
     }
     return [
       {'id': 1, 'name': 'د. أحمد شرف الدين', 'specialty': 'باطنية وقلب', 'clinic_name': 'مستشفى الشفاء التخصصي', 'consultation_fee': 8000.0, 'available_slots': ['04:00 م', '04:30 م', '05:00 م'], 'phone': '771234567'},
+      {'id': 2, 'name': 'د. سامية عبدالرحمن', 'specialty': 'طب وجراحة العيون', 'clinic_name': 'مركز النور للعيون', 'consultation_fee': 7000.0, 'available_slots': ['09:00 ص', '09:30 ص', '10:00 ص'], 'phone': '772223344'},
+      {'id': 3, 'name': 'د. فيصل المعمري', 'specialty': 'جراحة العظام والمفاصل', 'clinic_name': 'المركز الاستشاري للعظام', 'consultation_fee': 9000.0, 'available_slots': ['05:00 م', '05:40 م', '06:20 م'], 'phone': '773334455'},
     ];
   }
 
@@ -333,6 +343,7 @@ class ApiService {
     }
     return [
       {'id': 1, 'driver_name': 'أبو صخر الماوري', 'station_name': 'محطة آبار حِدة العذبة', 'water_type': 'مياه شرب نقية مكررة', 'capacity_liters': 6000, 'price': 18000.0, 'phone': '775112233', 'latitude': 15.3400, 'longitude': 44.1800},
+      {'id': 2, 'driver_name': 'عبدالكريم الصرابي', 'station_name': 'مشروع مياه الروضة النقي', 'water_type': 'مياه غيلية عذبة طبيعية', 'capacity_liters': 3000, 'price': 10000.0, 'phone': '774998877', 'latitude': 15.3900, 'longitude': 44.2100},
     ];
   }
 
@@ -408,6 +419,7 @@ class ApiService {
     }
     return [
       {'id': 1, 'restaurant_name': 'مطعم الشيباني الملكي', 'meal_title': 'فحسة لحم بلدي مع الملوج الحار', 'category': 'شعبي يمني', 'price': 4500.0, 'prep_time_mins': 15, 'phone': '777111222'},
+      {'id': 2, 'restaurant_name': 'مطاعم الخطيب السياحية', 'meal_title': 'نصف حبة مندي لحم مع الرز البسمتي', 'category': 'مشويات ومندي', 'price': 6500.0, 'prep_time_mins': 20, 'phone': '777333444'},
     ];
   }
 
@@ -484,7 +496,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {'id': 1, 'store_name': 'عالم الإلكترونيات الذكي', 'store_category': 'إلكترونيات وهواتف', 'product_title': 'هاتف سامسونج الترا 256 جيجا', 'description': 'نسخة الشرق الأوسط.', 'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80', 'price': 480000.0, 'stock_quantity': 4, 'hold_hours': 24, 'phone': '771122334'},
+      {'id': 1, 'store_name': 'عالم الإلكترونيات الذكي', 'store_category': 'إلكترونيات وهواتف', 'product_title': 'هاتف سامسونج الترا 256 جيجا', 'description': 'نسخة الشرق الأوسط شريحتين مع ضمان سنة كاملة.', 'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80', 'price': 480000.0, 'stock_quantity': 4, 'hold_hours': 24, 'phone': '771122334'},
     ];
   }
 
@@ -648,7 +660,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {'id': 1, 'hotel_name': 'فندق الأفق الملكي VIP', 'room_type': 'جناح ملكي تنفيذي', 'location': 'حي حِدة', 'description': 'شامل الإفطار الصباحي.', 'image_url': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80', 'price_per_night': 45000.0, 'available_rooms': 3, 'phone': '778111222'},
+      {'id': 1, 'hotel_name': 'فندق الأفق الملكي VIP', 'room_type': 'جناح ملكي تنفيذي', 'location': 'حي حِدة', 'description': 'شامل الإفطار والإنترنت.', 'image_url': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80', 'price_per_night': 45000.0, 'available_rooms': 3, 'phone': '778111222'},
     ];
   }
 
@@ -691,7 +703,7 @@ class ApiService {
     return true;
   }
 
-  // ===================== قطاع تأجير السيارات السياحية والعائلية =====================
+  // ===================== قطاع تأجير السيارات =====================
   static Future<List<Map<String, dynamic>>> fetchRentalCars() async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -774,7 +786,7 @@ class ApiService {
     return true;
   }
 
-  // ===================== قطاع العقارات والمنازل (Real Estate & Housing) =====================
+  // ===================== قطاع العقارات والمنازل =====================
   static Future<List<Map<String, dynamic>>> fetchRealEstateProperties() async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -818,66 +830,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {
-        'id': 1,
-        'broker_name': 'مكتب المستشار العقاري المعتمد',
-        'property_title': 'شقة عائلية فاخرة سوبر ديلوكس دور ثالث',
-        'listing_type': 'إيجار شهري',
-        'property_category': 'شقق سكنية عائلية',
-        'location_neighborhood': 'حي الأصبحي - شارع المقالح',
-        'bedrooms': 4,
-        'bathrooms': 3,
-        'area_sqm': 185,
-        'description': 'مجلس مستقل مع حمام ومدخلين، صالة واسعة، مطبخ نظام أمريكي، مصعد شغال، وحراسة مدار الساعة.',
-        'image_url': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500&q=80',
-        'price': 160000.0,
-        'phone': '771888999',
-      },
-      {
-        'id': 2,
-        'broker_name': 'دار الأمان للاستثمار العقاري',
-        'property_title': 'فيلا مستقلة مودرن حديثة البناء حجر هيلاني',
-        'listing_type': 'للبيع قطعي',
-        'property_category': 'فلل وقصور مستقلة',
-        'location_neighborhood': 'بيت بوس - حي الشباب الراقي',
-        'bedrooms': 6,
-        'bathrooms': 5,
-        'area_sqm': 340,
-        'description': 'مبنية على 6 لِبن حر، حوش يتسع لـ 3 سيارات، مسبح خاص، خزان أرضي كبير، واجهات زجاجية عازلة.',
-        'image_url': 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&q=80',
-        'price': 48000000.0,
-        'phone': '772777666',
-      },
-      {
-        'id': 3,
-        'broker_name': 'مجموعة النخبة للوساطة والتسويق',
-        'property_title': 'مكتب إداري ومركز تجاري واجهة رئيسية',
-        'listing_type': 'إيجار سنوي',
-        'property_category': 'محلات ومكاتب تجارية',
-        'location_neighborhood': 'شارع الزبيري - برج التجارة العالمي',
-        'bedrooms': 3,
-        'bathrooms': 2,
-        'area_sqm': 120,
-        'description': 'موقع استراتيجي للشركات والمنظمات، تكييف مركزي، شبكة ألياف ضوئية، ومولد كهربائي متواصل.',
-        'image_url': 'https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&q=80',
-        'price': 350000.0,
-        'phone': '773666555',
-      },
-      {
-        'id': 4,
-        'broker_name': 'مكتب العاصمة للخدمات العقارية',
-        'property_title': 'قطعة أرض استثمارية حر جاهزة للبناء فوراً',
-        'listing_type': 'للبيع قطعي',
-        'property_category': 'أراضي استثمارية وسكنية',
-        'location_neighborhood': 'حي ارتل الجديد - جوار الخط الرئيسي',
-        'bedrooms': 0,
-        'bathrooms': 0,
-        'area_sqm': 220,
-        'description': 'مساحة 5 لِبن شوارع معتمدة 14 متر، مسجلة بالسجل العقاري خالية من أي نزاع، كهرباء وماء متوفر.',
-        'image_url': 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=500&q=80',
-        'price': 15000000.0,
-        'phone': '774555444',
-      },
+      {'id': 1, 'broker_name': 'مكتب المستشار العقاري', 'property_title': 'شقة عائلية فاخرة سوبر ديلوكس', 'listing_type': 'إيجار شهري', 'property_category': 'شقق سكنية عائلية', 'location_neighborhood': 'حي الأصبحي', 'bedrooms': 4, 'bathrooms': 3, 'area_sqm': 185, 'description': 'مصعد شغال وحراسة.', 'image_url': 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=500&q=80', 'price': 160000.0, 'phone': '771888999'},
     ];
   }
 
@@ -916,24 +869,157 @@ class ApiService {
           )
         ''');
         await conn.execute(
+          Sql.named('INSERT INTO real_estate_properties (broker_name, property_title, listing_type, property_category, location_neighborhood, bedrooms, bathrooms, area_sqm, description, image_url, price, phone) VALUES (@brk, @title, @type, @cat, @loc, @beds, @baths, @area, @desc, @img, @price, @phone)'),
+          parameters: {'brk': brokerName, 'title': propertyTitle, 'type': listingType, 'cat': propertyCategory, 'loc': locationNeighborhood, 'beds': bedrooms, 'baths': bathrooms, 'area': areaSqm, 'desc': description, 'img': imageUrl, 'price': price, 'phone': phone},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== إدارة التذاكر والحجوزات الشخصية =====================
+  static Future<List<Map<String, dynamic>>> fetchUserBookings(String userId) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS service_bookings (
+            id SERIAL PRIMARY KEY,
+            user_id VARCHAR(50) NOT NULL,
+            business_name VARCHAR(150) NOT NULL,
+            category VARCHAR(50) NOT NULL,
+            total_price NUMERIC(10, 2) NOT NULL,
+            qr_pass VARCHAR(100) NOT NULL,
+            status VARCHAR(50) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        final res = await conn.execute(
+          Sql.named('SELECT id, business_name, category, total_price, qr_pass, status, created_at FROM service_bookings WHERE user_id = @uid ORDER BY id DESC'),
+          parameters: {'uid': userId},
+        );
+        await conn.close();
+
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'business_name': r[1].toString(),
+            'category': r[2].toString(),
+            'total_price': (r[3] as num).toDouble(),
+            'qr_pass': r[4].toString(),
+            'status': r[5].toString(),
+            'created_at': r[6]?.toString() ?? 'الآن',
+          }).toList();
+        }
+      } catch (_) {}
+    }
+
+    if (_inMemoryBookings.isNotEmpty) {
+      return _inMemoryBookings.where((b) => b['user_id'] == userId).toList();
+    }
+
+    return [
+      {
+        'id': 101,
+        'business_name': 'شركة النورس للنقل الدولي VIP',
+        'category': 'BUS',
+        'total_price': 12000.0,
+        'qr_pass': 'PASS-BUS-889120',
+        'status': 'CONFIRMED',
+        'created_at': 'اليوم 08:30 ص',
+      },
+      {
+        'id': 102,
+        'business_name': 'مركز الشفاء التخصصي - د. أحمد شرف الدين',
+        'category': 'CLINIC',
+        'total_price': 6400.0,
+        'qr_pass': 'PASS-MED-441290',
+        'status': 'CONFIRMED',
+        'created_at': 'أمس 04:15 م',
+      },
+      {
+        'id': 103,
+        'business_name': 'محطة آبار حِدة - صهريج 6000 لتر',
+        'category': 'WATER',
+        'total_price': 14400.0,
+        'qr_pass': 'PASS-H2O-991244',
+        'status': 'CONFIRMED',
+        'created_at': 'منذ يومين',
+      },
+    ];
+  }
+
+  static Future<bool> saveBooking({
+    required String userId,
+    required String businessName,
+    required String category,
+    required double totalPrice,
+    required String qrPass,
+  }) async {
+    final newBooking = {
+      'id': DateTime.now().millisecondsSinceEpoch,
+      'user_id': userId,
+      'business_name': businessName,
+      'category': category,
+      'total_price': totalPrice,
+      'qr_pass': qrPass,
+      'status': 'CONFIRMED',
+      'created_at': 'الآن',
+    };
+    _inMemoryBookings.insert(0, newBooking);
+
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS service_bookings (
+            id SERIAL PRIMARY KEY,
+            user_id VARCHAR(50) NOT NULL,
+            business_name VARCHAR(150) NOT NULL,
+            category VARCHAR(50) NOT NULL,
+            total_price NUMERIC(10, 2) NOT NULL,
+            qr_pass VARCHAR(100) NOT NULL,
+            status VARCHAR(50) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+          )
+        ''');
+
+        await conn.execute(
           Sql.named(
-            'INSERT INTO real_estate_properties (broker_name, property_title, listing_type, property_category, location_neighborhood, bedrooms, bathrooms, area_sqm, description, image_url, price, phone) '
-            'VALUES (@brk, @title, @type, @cat, @loc, @beds, @baths, @area, @desc, @img, @price, @phone)'
+            'INSERT INTO service_bookings (user_id, business_name, category, total_price, qr_pass, status) '
+            'VALUES (@uid, @bname, @cat, @price, @qr, @status)'
           ),
           parameters: {
-            'brk': brokerName,
-            'title': propertyTitle,
-            'type': listingType,
-            'cat': propertyCategory,
-            'loc': locationNeighborhood,
-            'beds': bedrooms,
-            'baths': bathrooms,
-            'area': areaSqm,
-            'desc': description,
-            'img': imageUrl,
-            'price': price,
-            'phone': phone,
+            'uid': userId,
+            'bname': businessName,
+            'cat': category,
+            'price': totalPrice,
+            'qr': qrPass,
+            'status': 'CONFIRMED',
           },
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static Future<bool> cancelBooking(int bookingId) async {
+    _inMemoryBookings.removeWhere((b) => b['id'] == bookingId);
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute(
+          Sql.named('UPDATE service_bookings SET status = @st WHERE id = @bid'),
+          parameters: {'st': 'CANCELLED', 'bid': bookingId},
         );
         await conn.close();
         return true;
