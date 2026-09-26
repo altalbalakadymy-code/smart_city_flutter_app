@@ -17,6 +17,7 @@ import 'real_estate_screen.dart';
 import 'my_bookings_screen.dart';
 import 'budget_matcher_screen.dart';
 import 'qr_scanner_screen.dart';
+import 'vendor_portal_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -81,12 +82,21 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          // بوابة التاجر لحسابات VENDOR و ADMIN
+          if (isAuthorized)
+            IconButton(
+              icon: const Icon(Icons.storefront, color: Color(0xFFF59E0B)),
+              tooltip: 'حساب التاجر والمنشأة',
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => VendorPortalScreen(currentUser: user))),
+            ),
+          // فحص التذاكر
           if (isAuthorized)
             IconButton(
               icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF10B981)),
               tooltip: 'التحقق من التذاكر',
               onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => QrScannerScreen(currentUser: user))),
             ),
+          // تذاكري وحجوزاتي
           IconButton(
             icon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF06B6D4)),
             tooltip: 'تذاكري وحجوزاتي',
