@@ -1,8 +1,8 @@
-name: Build Flutter APK
+name: Build and Release APK
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -10,27 +10,27 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true
 
-      - name: Recreate Android platform files
-        run: flutter create . --platforms=android
+      - name: Recreate Android Files & Get Dependencies
+        run: |
+          flutter create . --platforms=android
+          flutter pub get
 
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build Android APK
+      - name: Build APK
         run: flutter build apk --release
 
       - name: Upload APK Artifact
