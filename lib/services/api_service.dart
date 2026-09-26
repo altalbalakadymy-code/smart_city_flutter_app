@@ -415,7 +415,6 @@ class ApiService {
       {'id': 1, 'restaurant_name': 'مطعم الشيباني الملكي', 'meal_title': 'فحسة لحم بلدي مع الملوج الحار', 'category': 'شعبي يمني', 'price': 4500.0, 'prep_time_mins': 15, 'phone': '777111222'},
       {'id': 2, 'restaurant_name': 'مطاعم الخطيب السياحية', 'meal_title': 'نصف حبة مندي لحم مع الرز البسمتي', 'category': 'مشويات ومندي', 'price': 6500.0, 'prep_time_mins': 20, 'phone': '777333444'},
       {'id': 3, 'restaurant_name': 'برجر ستيشن الذكي', 'meal_title': 'وجبة دبل برجر أنجوس مع البطاطس المقرمشة', 'category': 'وجبات سريعة', 'price': 3800.0, 'prep_time_mins': 12, 'phone': '777555666'},
-      {'id': 4, 'restaurant_name': 'مطعم رويال فود', 'meal_title': 'سمك ديرك مقلي مع السلتة والصنعاني', 'category': 'بحريات', 'price': 7000.0, 'prep_time_mins': 25, 'phone': '777888999'},
     ];
   }
 
@@ -444,6 +443,161 @@ class ApiService {
         await conn.execute(
           Sql.named('INSERT INTO restaurant_meals (restaurant_name, meal_title, category, price, prep_time_mins, phone) VALUES (@rest, @meal, @cat, @price, @time, @phone)'),
           parameters: {'rest': restaurantName, 'meal': mealTitle, 'cat': category, 'price': price, 'time': prepTime, 'phone': phone},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== قطاع المتاجر الشاملة (دعم الصورة، السعر، والوصف) =====================
+  static Future<List<Map<String, dynamic>>> fetchRetailProducts() async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS retail_products (
+            id SERIAL PRIMARY KEY,
+            store_name VARCHAR(150) NOT NULL,
+            store_category VARCHAR(100) NOT NULL,
+            product_title VARCHAR(150) NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price NUMERIC(10, 2) NOT NULL,
+            stock_quantity INT NOT NULL,
+            hold_hours INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        final res = await conn.execute(Sql.named('SELECT id, store_name, store_category, product_title, description, image_url, price, stock_quantity, hold_hours, phone FROM retail_products ORDER BY id DESC'));
+        await conn.close();
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'store_name': r[1].toString(),
+            'store_category': r[2].toString(),
+            'product_title': r[3].toString(),
+            'description': r[4].toString(),
+            'image_url': r[5].toString(),
+            'price': (r[6] as num).toDouble(),
+            'stock_quantity': r[7] as int,
+            'hold_hours': r[8] as int,
+            'phone': r[9]?.toString() ?? '770000000',
+          }).toList();
+        }
+      } catch (_) {}
+    }
+    return [
+      {
+        'id': 1,
+        'store_name': 'عالم الإلكترونيات الذكي',
+        'store_category': 'إلكترونيات وهواتف',
+        'product_title': 'هاتف سامسونج الترا 256 جيجا',
+        'description': 'نسخة الشرق الأوسط شريحتين مع ضمان سنة كاملة وشاحن سريع أصلي.',
+        'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80',
+        'price': 480000.0,
+        'stock_quantity': 4,
+        'hold_hours': 24,
+        'phone': '771122334',
+      },
+      {
+        'id': 2,
+        'store_name': 'بوتيك الأناقة الراقية',
+        'store_category': 'ملابس وموضة',
+        'product_title': 'بدلة رسمية كلاسيكية رجالي',
+        'description': 'قماش صوف إيطالي فاخر متوفر بمقاسات متعددة مناسبة للمناسبات الرسمية.',
+        'image_url': 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80',
+        'price': 35000.0,
+        'stock_quantity': 8,
+        'hold_hours': 48,
+        'phone': '772233445',
+      },
+      {
+        'id': 3,
+        'store_name': 'توي لاند للألعاب والترفيه',
+        'store_category': 'ألعاب وترفيه',
+        'product_title': 'جهاز بلايستيشن 5 مع يدين تحكم',
+        'description': 'إصدار السي دي النسخة الأوروبية مع لعبتين هدية وضمان تشغيل.',
+        'image_url': 'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=500&q=80',
+        'price': 320000.0,
+        'stock_quantity': 3,
+        'hold_hours': 24,
+        'phone': '773344556',
+      },
+      {
+        'id': 4,
+        'store_name': 'العربية للعود والعطور',
+        'store_category': 'عطور ومستحضرات',
+        'product_title': 'باقة عطر ملكي خاص مع دهن عود',
+        'description': 'تركيبة خاصة فواحة وثابتة لأكثر من 48 ساعة تأتي في علبة هدايا جلدية فاخرة.',
+        'image_url': 'https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?w=500&q=80',
+        'price': 28000.0,
+        'stock_quantity': 12,
+        'hold_hours': 48,
+        'phone': '774455667',
+      },
+      {
+        'id': 5,
+        'store_name': 'قصر الأدوات والمستلزمات',
+        'store_category': 'مستلزمات منزلية',
+        'product_title': 'طقم أواني جرانيت إيطالي 10 قطع',
+        'description': 'غير قابل للالتصاق ومقاوم للخدش متوافق مع كافة أنواع الأفران.',
+        'image_url': 'https://images.unsplash.com/photo-1584990347449-39958f844282?w=500&q=80',
+        'price': 52000.0,
+        'stock_quantity': 6,
+        'hold_hours': 48,
+        'phone': '775566778',
+      },
+    ];
+  }
+
+  static Future<bool> addRetailProduct({
+    required String storeName,
+    required String storeCategory,
+    required String productTitle,
+    required String description,
+    required String imageUrl,
+    required double price,
+    required int stock,
+    required int holdHours,
+    required String phone,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS retail_products (
+            id SERIAL PRIMARY KEY,
+            store_name VARCHAR(150) NOT NULL,
+            store_category VARCHAR(100) NOT NULL,
+            product_title VARCHAR(150) NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price NUMERIC(10, 2) NOT NULL,
+            stock_quantity INT NOT NULL,
+            hold_hours INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        await conn.execute(
+          Sql.named(
+            'INSERT INTO retail_products (store_name, store_category, product_title, description, image_url, price, stock_quantity, hold_hours, phone) '
+            'VALUES (@store, @cat, @title, @desc, @img, @price, @stock, @hours, @phone)'
+          ),
+          parameters: {
+            'store': storeName,
+            'cat': storeCategory,
+            'title': productTitle,
+            'desc': description,
+            'img': imageUrl,
+            'price': price,
+            'stock': stock,
+            'hours': holdHours,
+            'phone': phone,
+          },
         );
         await conn.close();
         return true;
