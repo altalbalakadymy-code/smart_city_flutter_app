@@ -173,7 +173,7 @@ class HomeScreen extends StatelessWidget {
                 _buildSectorItem(context, 'المطاعم', Icons.restaurant, Colors.orange, SectorsScreen(currentUser: _currentUser)),
                 _buildSectorItem(context, 'العيادات', Icons.medical_services, Colors.teal, const HealthcareScreen()),
                 _buildSectorItem(context, 'باصات السفر', Icons.directions_bus, Colors.blue, const TransportScreen()),
-                _buildSectorItem(context, 'وايتات مياه', Icons.water_drop, Colors.cyan, const WaterTankerScreen()),
+                _buildSectorItem(context, 'وايتات مياه', Icons.water_drop, Colors.cyan, WaterTankerScreen()),
                 _buildSectorItem(context, 'سوق القات', Icons.eco, Colors.green, const QatMarketScreen()),
                 _buildSectorItem(context, 'الفنادق', Icons.hotel, Colors.deepPurple, const TourismScreen()),
                 _buildSectorItem(context, 'تأجير سيارات', Icons.directions_car, Colors.amber.shade800, SectorsScreen(currentUser: _currentUser)),
