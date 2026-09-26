@@ -1,6 +1,5 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 
 class HealthcareScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -12,227 +11,509 @@ class HealthcareScreen extends StatefulWidget {
 }
 
 class _HealthcareScreenState extends State<HealthcareScreen> {
-  final String _baseUrl = "https://smartcitybackend-production-9d26.up.railway.app";
-  List<dynamic> catalog = [];
-  bool isLoading = true;
+  List<Map<String, dynamic>> _doctors = [];
+  bool _isLoading = true;
+  String _selectedSpecialty = 'الكل';
+  final List<String> _specialties = ['الكل', 'باطنية وقلب', 'طب وجراحة العيون', 'جراحة العظام والمفاصل', 'أطفال وحديثي ولادة', 'طب وجراحة الأسنان'];
 
-  int? selectedClinicId;
-  String? selectedClinicName;
-  String? selectedDoctorName;
-  bool isBooking = false;
+  String? _selectedDate = '2026-10-01';
+  Map<int, String> _selectedSlots = {}; // تخزين الفترة المحددة لكل طبيب
+
+  bool get _isVip => widget.currentUser?['is_vip'] == true;
+  bool get _isAuthorized =>
+      widget.currentUser?['role'] == 'ADMIN' || widget.currentUser?['role'] == 'VENDOR';
 
   @override
   void initState() {
     super.initState();
-    _fetchCatalog();
+    _loadDoctors();
   }
 
-  Future<void> _fetchCatalog() async {
-    setState(() => isLoading = true);
-    try {
-      final res = await http.get(Uri.parse("$_baseUrl/api/v1/health/clinics-catalog"));
-      if (res.statusCode == 200) {
-        final data = jsonDecode(res.body) as List<dynamic>;
-        setState(() {
-          catalog = data;
-          if (catalog.isNotEmpty) {
-            selectedClinicId = catalog.first['clinic_id'];
-            selectedClinicName = catalog.first['clinic_name'];
-            final docs = catalog.first['doctors'] as List<dynamic>;
-            if (docs.isNotEmpty) {
-              selectedDoctorName = docs.first['doctor_name'];
-            }
-          }
-          isLoading = false;
-        });
-      }
-    } catch (_) {
-      setState(() => isLoading = false);
+  Future<void> _loadDoctors() async {
+    setState(() => _isLoading = true);
+    final data = await ApiService.fetchDoctors();
+    if (mounted) {
+      setState(() {
+        _doctors = data;
+        _isLoading = false;
+      });
     }
   }
 
-  Future<void> _bookNow() async {
-    if (selectedClinicName == null || selectedDoctorName == null) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('يرجى اختيار العيادة والطبيب أولاً')));
+  List<Map<String, dynamic>> get _filteredDoctors {
+    if (_selectedSpecialty == 'الكل') return _doctors;
+    return _doctors.where((d) => d['specialty'] == _selectedSpecialty).toList();
+  }
+
+  void _showAddDoctorDialog() {
+    final nameCtrl = TextEditingController();
+    final specCtrl = TextEditingController(text: 'باطنية وقلب');
+    final clinicCtrl = TextEditingController(text: 'المركز الطبي الاستشاري');
+    final feeCtrl = TextEditingController(text: '8000');
+    final slotsCtrl = TextEditingController(text: '04:00 م, 04:30 م, 05:00 م, 05:30 م');
+    final phoneCtrl = TextEditingController(text: '770000000');
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+          top: 20,
+          left: 20,
+          right: 20,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'إضافة طبيب / عيادة جديدة للسيرفر',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: nameCtrl,
+                decoration: InputDecoration(labelText: 'اسم الطبيب واللقب', prefixIcon: const Icon(Icons.person), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: specCtrl,
+                decoration: InputDecoration(labelText: 'التخصص الدقيق', prefixIcon: const Icon(Icons.medical_services), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: clinicCtrl,
+                decoration: InputDecoration(labelText: 'اسم المركز أو المستشفى', prefixIcon: const Icon(Icons.local_hospital), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: feeCtrl,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(labelText: 'رسوم المعاينة (ريال يمني)', prefixIcon: const Icon(Icons.money), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: slotsCtrl,
+                decoration: InputDecoration(labelText: 'الفترات المتاحة (مفصولة بفواصل)', prefixIcon: const Icon(Icons.access_time), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+              ),
+              const SizedBox(height: 10),
+              TextField(
+                controller: phoneCtrl,
+                keyboardType: TextInputType.phone,
+                decoration: InputDecoration(labelText: 'هاتف العيادة', prefixIcon: const Icon(Icons.phone), border: OutlineInputBorder(borderRadius: BorderRadius.circular(10))),
+              ),
+              const SizedBox(height: 18),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0F172A),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                onPressed: () async {
+                  if (nameCtrl.text.trim().isEmpty) return;
+                  Navigator.pop(ctx);
+                  final ok = await ApiService.addDoctor(
+                    name: nameCtrl.text.trim(),
+                    specialty: specCtrl.text.trim(),
+                    clinicName: clinicCtrl.text.trim(),
+                    fee: double.tryParse(feeCtrl.text) ?? 8000.0,
+                    slots: slotsCtrl.text.trim(),
+                    phone: phoneCtrl.text.trim(),
+                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(ok ? 'تم إضافة الطبيب بنجاح' : 'تم الحفظ محلياً'), backgroundColor: Colors.teal),
+                    );
+                    _loadDoctors();
+                  }
+                },
+                child: const Text('حفظ في قاعدة البيانات'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _bookDoctorSlot(Map<String, dynamic> doc) async {
+    final docId = doc['id'] as int;
+    final slot = _selectedSlots[docId];
+
+    if (slot == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('يرجى اختيار الفترة الزمنية المناسبة للكشف أولاً')),
+      );
       return;
     }
 
-    setState(() => isBooking = true);
-    final patientName = widget.currentUser?['full_name'] ?? 'مواطن ذكي';
+    final double fee = (doc['consultation_fee'] as num).toDouble();
+    final double finalFee = _isVip ? fee * 0.8 : fee;
+    final ticketCode = 'PASS-MED-${DateTime.now().millisecondsSinceEpoch.toString().substring(6)}';
 
-    try {
-      final res = await http.post(
-        Uri.parse("$_baseUrl/api/v1/health/book"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "business_id": selectedClinicId,
-          "clinic_name": selectedClinicName,
-          "doctor_name": selectedDoctorName,
-          "patient_name": patientName,
-          "appointment_date": "اليوم",
-        }),
-      );
+    // حفظ الحجز في السيرفر
+    await ApiService.addBusinessItem({
+      'user_id': widget.currentUser?['id'] ?? '1',
+      'business_name': '${doc['clinic_name']} - ${doc['name']}',
+      'category': 'CLINIC',
+      'total_price': finalFee,
+      'qr_pass': ticketCode,
+      'status': 'CONFIRMED',
+    });
 
-      if (res.statusCode == 200) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('تم تأكيد حجزك لدى $selectedDoctorName في $selectedClinicName بنجاح 🏥'),
-            backgroundColor: const Color(0xFF06D6A0),
-          ),
-        );
-      }
-    } catch (_) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('تعذر إتمام الحجز، تحقق من الاتصال'), backgroundColor: Color(0xFFFF5964)),
-      );
-    } finally {
-      if (mounted) setState(() => isBooking = false);
-    }
+    if (!mounted) return;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(width: 44, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(10))),
+            ),
+            const SizedBox(height: 16),
+            const Text('تذكرة موعد طبي مؤكد (QR)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F172A)), textAlign: TextAlign.center),
+            const SizedBox(height: 4),
+            Text(doc['clinic_name'], style: const TextStyle(color: Colors.teal, fontSize: 13, fontWeight: FontWeight.bold), textAlign: TextAlign.center),
+            const Divider(height: 24),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: const Color(0xFFF8FAFC), borderRadius: BorderRadius.circular(18), border: Border.all(color: Colors.black12)),
+                child: Column(
+                  children: [
+                    const Icon(Icons.qr_code_2, size: 130, color: Color(0xFF0F172A)),
+                    Text(ticketCode, style: const TextStyle(fontWeight: FontWeight.bold, letterSpacing: 2, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 18),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _buildInfo('الطبيب', doc['name']),
+                _buildInfo('موعد الكشف', slot),
+                _buildInfo('المبلغ المطلوب', '${finalFee.toInt()} ر.ي'),
+              ],
+            ),
+            const SizedBox(height: 14),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: Colors.teal.shade50, borderRadius: BorderRadius.circular(10)),
+              child: const Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.teal, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: Text('أبرز هذه التذكرة لموظف استقبال العيادة للدخول المباشر بدون انتظار.', style: TextStyle(fontSize: 11, color: Colors.teal)),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF0F172A),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text('تم الحفظ في مواعيدي'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    List<dynamic> currentDoctors = [];
-    if (selectedClinicId != null) {
-      final match = catalog.firstWhere((c) => c['clinic_id'] == selectedClinicId, orElse: () => null);
-      if (match != null) {
-        currentDoctors = match['doctors'] ?? [];
-      }
-    }
+  Widget _buildInfo(String title, String val) {
+    return Column(
+      children: [
+        Text(title, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+        const SizedBox(height: 2),
+        Text(val, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12, color: Color(0xFF0F172A))),
+      ],
+    );
+  }
 
-    return Scaffold(
-      backgroundColor: const Color(0xFF0B132B),
-      appBar: AppBar(
-        title: const Text('الرعاية الصحية والعيادات المعتمدة'),
-        backgroundColor: const Color(0xFF1C2541),
-        actions: [
-          IconButton(icon: const Icon(Icons.refresh_rounded), onPressed: _fetchCatalog),
-        ],
-      ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF06D6A0)))
-          : catalog.isEmpty
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.local_hospital_outlined, size: 70, color: Colors.white.withOpacity(0.3)),
-                      const SizedBox(height: 12),
-                      const Text('لا توجد عيادات أو مراكز صحية مسجلة بعد', style: TextStyle(color: Colors.white70)),
-                      const SizedBox(height: 6),
-                      const Text('يمكن لإدارة المدينة اعتماد المراكز الطبية وإصدار حساباتها', style: TextStyle(color: Colors.white38, fontSize: 12)),
-                    ],
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(14),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1C2541),
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(color: const Color(0xFF06D6A0).withOpacity(0.3)),
-                        ),
-                        child: const Row(
+  void _openMedicalChat(Map<String, dynamic> doc) {
+    final msgCtrl = TextEditingController();
+    final List<Map<String, String>> chat = [
+      {'sender': 'doctor', 'text': 'مرحباً بك، أنا مساعد ${doc['name']}. يمكنك كتابة وصف موجز لحالتك أو السؤال عن الفحوصات المطلوبة قبل الحضور.'}
+    ];
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setChat) => Padding(
+          padding: EdgeInsets.only(bottom: MediaQuery.of(ctx).viewInsets.bottom, top: 16, left: 16, right: 16),
+          child: SizedBox(
+            height: 450,
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        const CircleAvatar(backgroundColor: Colors.teal, child: Icon(Icons.medical_services, color: Colors.white, size: 20)),
+                        const SizedBox(width: 10),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CircleAvatar(
-                              backgroundColor: Color(0x2206D6A0),
-                              child: Icon(Icons.health_and_safety_rounded, color: Color(0xFF06D6A0)),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'احجز استشارتك الطبية فورياً لدى المراكز المعتمدة بالمدينة الرقمية',
-                                style: TextStyle(color: Colors.white, fontSize: 13),
-                              ),
-                            ),
+                            Text(doc['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                            Text(doc['specialty'], style: const TextStyle(color: Colors.grey, fontSize: 11)),
                           ],
                         ),
-                      ),
-                      const SizedBox(height: 24),
-                      const Text('اختر المركز الطبي أو العيادة:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                      const SizedBox(height: 10),
-                      DropdownButtonFormField<int>(
-                        value: selectedClinicId,
-                        dropdownColor: const Color(0xFF1C2541),
-                        style: const TextStyle(color: Colors.white),
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: const Color(0xFF1C2541),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        items: catalog.map<DropdownMenuItem<int>>((c) {
-                          return DropdownMenuItem<int>(
-                            value: c['clinic_id'] as int,
-                            child: Text(c['clinic_name'] ?? '', style: const TextStyle(fontSize: 13)),
-                          );
-                        }).toList(),
-                        onChanged: (val) {
-                          if (val != null) {
-                            setState(() {
-                              selectedClinicId = val;
-                              final c = catalog.firstWhere((e) => e['clinic_id'] == val);
-                              selectedClinicName = c['clinic_name'];
-                              final docs = c['doctors'] as List<dynamic>;
-                              selectedDoctorName = docs.isNotEmpty ? docs.first['doctor_name'] : null;
-                            });
-                          }
-                        },
-                      ),
-                      const SizedBox(height: 18),
-                      const Text('اختر الطبيب المعالج:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                      const SizedBox(height: 10),
-                      currentDoctors.isEmpty
-                          ? Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(color: const Color(0xFF1C2541), borderRadius: BorderRadius.circular(10)),
-                              child: const Text('لم تقم هذه العيادة بإضافة أطبائها بعد', style: TextStyle(color: Colors.white54, fontSize: 12)),
-                            )
-                          : DropdownButtonFormField<String>(
-                              value: selectedDoctorName,
-                              dropdownColor: const Color(0xFF1C2541),
-                              style: const TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                filled: true,
-                                fillColor: const Color(0xFF1C2541),
-                                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                              ),
-                              items: currentDoctors.map<DropdownMenuItem<String>>((d) {
-                                return DropdownMenuItem<String>(
-                                  value: d['doctor_name'] as String,
-                                  child: Text('${d['doctor_name']} (${d['specialty']})', style: const TextStyle(fontSize: 13)),
-                                );
-                              }).toList(),
-                              onChanged: (val) {
-                                if (val != null) setState(() => selectedDoctorName = val);
-                              },
-                            ),
-                      const SizedBox(height: 24),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 50,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF06D6A0),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ],
+                    ),
+                    IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(ctx)),
+                  ],
+                ),
+                const Divider(),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: chat.length,
+                    itemBuilder: (context, idx) {
+                      final m = chat[idx];
+                      final isMe = m['sender'] == 'me';
+                      return Align(
+                        alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: isMe ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          onPressed: (isBooking || currentDoctors.isEmpty) ? null : _bookNow,
-                          icon: isBooking
-                              ? const SizedBox.shrink()
-                              : const Icon(Icons.calendar_today_rounded, color: Color(0xFF0B132B)),
-                          label: isBooking
-                              ? const CircularProgressIndicator(color: Color(0xFF0B132B))
-                              : const Text('تأكيد الحجز الفوري', style: TextStyle(color: Color(0xFF0B132B), fontWeight: FontWeight.bold, fontSize: 15)),
+                          child: Text(m['text']!, style: TextStyle(color: isMe ? Colors.white : Colors.black87, fontSize: 13)),
                         ),
+                      );
+                    },
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: msgCtrl,
+                          decoration: InputDecoration(
+                            hintText: 'اكتب استشارتك التمهيدية...',
+                            filled: true,
+                            fillColor: const Color(0xFFF8FAFC),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        style: IconButton.styleFrom(backgroundColor: Colors.teal, foregroundColor: Colors.white),
+                        icon: const Icon(Icons.send, size: 20),
+                        onPressed: () {
+                          if (msgCtrl.text.trim().isEmpty) return;
+                          setChat(() => chat.add({'sender': 'me', 'text': msgCtrl.text.trim()}));
+                          msgCtrl.clear();
+                        },
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        elevation: 0,
+        backgroundColor: const Color(0xFF0F172A),
+        foregroundColor: Colors.white,
+        title: const Text('العيادات وحجز المواعيد الدقيقة', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        actions: [
+          if (_isAuthorized)
+            IconButton(
+              icon: const Icon(Icons.person_add),
+              tooltip: 'إضافة طبيب',
+              onPressed: _showAddDoctorDialog,
+            ),
+        ],
+      ),
+      floatingActionButton: _isAuthorized
+          ? FloatingActionButton.extended(
+              backgroundColor: const Color(0xFF0F172A),
+              icon: const Icon(Icons.medical_services, color: Color(0xFF06B6D4)),
+              label: const Text('إضافة طبيب للسيرفر', style: TextStyle(color: Colors.white)),
+              onPressed: _showAddDoctorDialog,
+            )
+          : null,
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF0F172A)))
+          : Column(
+              children: [
+                // فلتر التخصصات الطبية
+                Container(
+                  height: 48,
+                  margin: const EdgeInsets.only(top: 12),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _specialties.length,
+                    itemBuilder: (context, idx) {
+                      final spec = _specialties[idx];
+                      final isSelected = _selectedSpecialty == spec;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8.0),
+                        child: ChoiceChip(
+                          label: Text(spec),
+                          selected: isSelected,
+                          selectedColor: const Color(0xFF0F172A),
+                          labelStyle: TextStyle(color: isSelected ? Colors.white : Colors.black87, fontSize: 12),
+                          onSelected: (val) => setState(() => _selectedSpecialty = spec),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
+                // قائمة الأطباء والعيادات
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _filteredDoctors.length,
+                    itemBuilder: (context, idx) {
+                      final doc = _filteredDoctors[idx];
+                      final docId = doc['id'] as int;
+                      final List<String> slots = List<String>.from(doc['available_slots'] ?? []);
+                      final double fee = (doc['consultation_fee'] as num).toDouble();
+                      final double finalFee = _isVip ? fee * 0.8 : fee;
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 16),
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.black.withOpacity(0.04)),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 10, offset: const Offset(0, 4)),
+                          ],
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(doc['name'], style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF0F172A))),
+                                    const SizedBox(height: 2),
+                                    Text('${doc['specialty']} | ${doc['clinic_name']}', style: const TextStyle(color: Colors.teal, fontSize: 12, fontWeight: FontWeight.w600)),
+                                  ],
+                                ),
+                                IconButton(
+                                  icon: const Icon(Icons.chat_bubble_outline, color: Colors.teal),
+                                  tooltip: 'استشارة تمهيدية',
+                                  onPressed: () => _openMedicalChat(doc),
+                                ),
+                              ],
+                            ),
+                            const Divider(height: 20),
+
+                            // عنوان الفترات الزمنية المتاحة (Time Slots)
+                            const Text('اختر وقت الكشف الدقيق (Time Slot):', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                            const SizedBox(height: 8),
+
+                            // رقائق الفترات الزمنية
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: slots.map((s) {
+                                final isSelected = _selectedSlots[docId] == s;
+                                return InkWell(
+                                  onTap: () => setState(() => _selectedSlots[docId] = s),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: isSelected ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(color: isSelected ? const Color(0xFF0F172A) : Colors.transparent),
+                                    ),
+                                    child: Text(
+                                      s,
+                                      style: TextStyle(
+                                        color: isSelected ? Colors.white : Colors.black87,
+                                        fontSize: 12,
+                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            ),
+                            const SizedBox(height: 16),
+
+                            // شريط السعر وزر الحجز
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text('رسوم الكشف ${_isVip ? "(خصم VIP 20%)" : ""}:', style: const TextStyle(fontSize: 11, color: Colors.grey)),
+                                    Text('${finalFee.toInt()} ر.ي', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.teal)),
+                                  ],
+                                ),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF0F172A),
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                  ),
+                                  icon: const Icon(Icons.calendar_month, size: 18),
+                                  label: const Text('تأكيد الموعد (QR)', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                                  onPressed: () => _bookDoctorSlot(doc),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }
