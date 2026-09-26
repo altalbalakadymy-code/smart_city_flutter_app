@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import 'home_screen.dart';
 
@@ -16,6 +18,17 @@ class _LoginScreenState extends State<LoginScreen> {
   String _selectedRole = 'CLIENT';
   bool _isLoading = false;
 
+  Future<void> _persistSessionAndNavigate(Map<String, dynamic> user) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('saved_user_session', jsonEncode(user));
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => HomeScreen(currentUser: user)),
+    );
+  }
+
   void _loginAsRole(String role, String name, String phone, bool isVip) {
     final user = {
       'id': role == 'ADMIN' ? '1' : (role == 'VENDOR' ? '3' : '2'),
@@ -24,11 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
       'role': role,
       'is_vip': isVip,
     };
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => HomeScreen(currentUser: user)),
-    );
+    _persistSessionAndNavigate(user);
   }
 
   Future<void> _submit() async {
@@ -46,8 +55,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (_isSignUp) {
         final name = _nameController.text.trim();
         final finalName = name.isEmpty ? 'مستخدم جديد' : name;
-        
-        // محاولة الحفظ في السيرفر مع معالجة الاحتياط في حال بطء الاتصال
+
         final user = await ApiService.registerUser(
           name: finalName,
           phone: phone,
@@ -58,36 +66,30 @@ class _LoginScreenState extends State<LoginScreen> {
         setState(() => _isLoading = false);
 
         final userData = user ?? {
-          'id': '99',
+          'id': DateTime.now().millisecondsSinceEpoch.toString(),
           'name': finalName,
           'phone': phone,
           'role': _selectedRole,
           'is_vip': _selectedRole == 'CLIENT',
         };
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomeScreen(currentUser: userData)),
-        );
+        await _persistSessionAndNavigate(userData);
       } else {
         final user = await ApiService.loginUser(phone);
         if (!mounted) return;
         setState(() => _isLoading = false);
 
         final userData = user ?? {
-          'id': '99',
+          'id': '101',
           'name': 'مستخدم المنصة',
           'phone': phone,
           'role': 'CLIENT',
           'is_vip': true,
         };
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => HomeScreen(currentUser: userData)),
-        );
+        await _persistSessionAndNavigate(userData);
       }
-    } catch (e) {
+    } catch (_) {
       if (mounted) {
         setState(() => _isLoading = false);
         _loginAsRole('CLIENT', 'مواطن', phone, true);
@@ -212,7 +214,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const Divider(color: Colors.white24, height: 32),
 
-                // أزرار الدخول السريع بالأدوار الثلاثة
                 const Text(
                   'أو الدخول المباشر حسب نوع الصلاحية:',
                   style: TextStyle(color: Colors.white70, fontSize: 13),
