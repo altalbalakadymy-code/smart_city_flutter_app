@@ -13,6 +13,7 @@ import 'qat_market_screen.dart';
 import 'tourism_screen.dart';
 import 'car_rental_screen.dart';
 import 'real_estate_screen.dart';
+import 'my_bookings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -65,6 +66,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          // زر الانتقال إلى تذاكري وحجوزاتي
+          IconButton(
+            icon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF06B6D4)),
+            tooltip: 'تذاكري وحجوزاتي',
+            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => MyBookingsScreen(currentUser: user))),
+          ),
           IconButton(
             icon: const Icon(Icons.dashboard_customize_outlined, color: Colors.white70),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const DashboardScreen())),
