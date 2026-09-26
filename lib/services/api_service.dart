@@ -337,7 +337,6 @@ class ApiService {
     return [
       {'id': 1, 'driver_name': 'أبو صخر الماوري', 'station_name': 'محطة آبار حِدة العذبة', 'water_type': 'مياه شرب نقية مكررة', 'capacity_liters': 6000, 'price': 18000.0, 'phone': '775112233', 'latitude': 15.3400, 'longitude': 44.1800},
       {'id': 2, 'driver_name': 'عبدالكريم الصرابي', 'station_name': 'مشروع مياه الروضة النقي', 'water_type': 'مياه غيلية عذبة طبيعية', 'capacity_liters': 3000, 'price': 10000.0, 'phone': '774998877', 'latitude': 15.3900, 'longitude': 44.2100},
-      {'id': 3, 'driver_name': 'صالح القحوم', 'station_name': 'مياه الكوثر الصافية', 'water_type': 'مياه شرب نقية مكررة', 'capacity_liters': 10000, 'price': 28000.0, 'phone': '771665544', 'latitude': 15.3600, 'longitude': 44.1950},
     ];
   }
 
@@ -380,7 +379,7 @@ class ApiService {
     return true;
   }
 
-  // ===================== قطاع المطاعم وتجهيز الوجبات (Pre-order) =====================
+  // ===================== قطاع المطاعم وتجهيز الوجبات =====================
   static Future<List<Map<String, dynamic>>> fetchRestaurantMeals() async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -414,7 +413,6 @@ class ApiService {
     return [
       {'id': 1, 'restaurant_name': 'مطعم الشيباني الملكي', 'meal_title': 'فحسة لحم بلدي مع الملوج الحار', 'category': 'شعبي يمني', 'price': 4500.0, 'prep_time_mins': 15, 'phone': '777111222'},
       {'id': 2, 'restaurant_name': 'مطاعم الخطيب السياحية', 'meal_title': 'نصف حبة مندي لحم مع الرز البسمتي', 'category': 'مشويات ومندي', 'price': 6500.0, 'prep_time_mins': 20, 'phone': '777333444'},
-      {'id': 3, 'restaurant_name': 'برجر ستيشن الذكي', 'meal_title': 'وجبة دبل برجر أنجوس مع البطاطس المقرمشة', 'category': 'وجبات سريعة', 'price': 3800.0, 'prep_time_mins': 12, 'phone': '777555666'},
     ];
   }
 
@@ -492,7 +490,6 @@ class ApiService {
     }
     return [
       {'id': 1, 'store_name': 'عالم الإلكترونيات الذكي', 'store_category': 'إلكترونيات وهواتف', 'product_title': 'هاتف سامسونج الترا 256 جيجا', 'description': 'نسخة الشرق الأوسط شريحتين مع ضمان سنة كاملة وشاحن سريع أصلي.', 'image_url': 'https://images.unsplash.com/photo-1610945415295-d9bbf067e59c?w=500&q=80', 'price': 480000.0, 'stock_quantity': 4, 'hold_hours': 24, 'phone': '771122334'},
-      {'id': 2, 'store_name': 'بوتيك الأناقة الراقية', 'store_category': 'ملابس وموضة', 'product_title': 'بدلة رسمية كلاسيكية رجالي', 'description': 'قماش صوف إيطالي فاخر متوفر بمقاسات متعددة مناسبة للمناسبات الرسمية.', 'image_url': 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?w=500&q=80', 'price': 35000.0, 'stock_quantity': 8, 'hold_hours': 48, 'phone': '772233445'},
     ];
   }
 
@@ -575,8 +572,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {'id': 1, 'market_name': 'سوق مذبح المركزي النموذجي', 'vendor_name': 'أبو عادل الهمداني', 'stall_number': 'بسطة 14 - الجناح الشرقي', 'qat_type': 'همداني غيلي سوبر', 'description': 'قطفة فجر اليوم، رطب صافي ورأس حبة ناعم جداً مروي ماء بئر عذب.', 'image_url': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', 'price': 12000.0, 'available_bundles': 5, 'phone': '771444555'},
-      {'id': 2, 'market_name': 'سوق مذبح المركزي النموذجي', 'vendor_name': 'الحاج مصلح الصبري', 'stall_number': 'بسطة 22 - مدخل السوق الرئيسي', 'qat_type': 'صبري ممتاز رطب', 'description': 'باقة صبري بلدي درجة أولى حبة خضراء حالية خالية من أي رش.', 'image_url': 'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=500&q=80', 'price': 8000.0, 'available_bundles': 8, 'phone': '772555666'},
+      {'id': 1, 'market_name': 'سوق مذبح المركزي النموذجي', 'vendor_name': 'أبو عادل الهمداني', 'stall_number': 'بسطة 14', 'qat_type': 'همداني غيلي سوبر', 'description': 'قطفة فجر اليوم.', 'image_url': 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80', 'price': 12000.0, 'available_bundles': 5, 'phone': '771444555'},
     ];
   }
 
@@ -657,50 +653,7 @@ class ApiService {
       } catch (_) {}
     }
     return [
-      {
-        'id': 1,
-        'hotel_name': 'فندق الأفق الملكي VIP',
-        'room_type': 'جناح ملكي تنفيذي مع إطلالة بانورامية',
-        'location': 'حي حِدة - شارع بيروت',
-        'description': 'شامل الإفطار الصباحي، خدمة إنترنت فائق السرعة، صالة جلوس خاصة، وشاشة ذكية 65 بوصة.',
-        'image_url': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80',
-        'price_per_night': 45000.0,
-        'available_rooms': 3,
-        'phone': '778111222',
-      },
-      {
-        'id': 2,
-        'hotel_name': 'أجنحة تاج سبأ الفندقية',
-        'room_type': 'غرفة مزدوجة ديلوكس (سريرين كبار)',
-        'location': 'شارع علي عبدالمغني - وسط العاصمة',
-        'description': 'مكيفة بالكامل مع بوفيه إفطار مجاني وموقف سيارات خاص مراقب بالكاميرات.',
-        'image_url': 'https://images.unsplash.com/photo-1590490360182-c33d57733427?w=500&q=80',
-        'price_per_night': 28000.0,
-        'available_rooms': 6,
-        'phone': '778333444',
-      },
-      {
-        'id': 3,
-        'hotel_name': 'شقق الفخامة المفروشة الراقية',
-        'room_type': 'شقة مفروشة غرفتين وصالة ومطبخ متكامل',
-        'location': 'حي السبعين - بالقرب من حديقة السبعين',
-        'description': 'مطبخ كامل مجهز، غسالة ملابس أوتوماتيك، شاشة ذكية، استقلالية تامة مناسبة جداً للعائلات.',
-        'image_url': 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=500&q=80',
-        'price_per_night': 35000.0,
-        'available_rooms': 4,
-        'phone': '778555666',
-      },
-      {
-        'id': 4,
-        'hotel_name': 'فندق قصر البستان السياحي',
-        'room_type': 'غرفة مفردة كلاسيك لرجال الأعمال',
-        'location': 'الستين الجنوبي - فج عطان',
-        'description': 'هدوء تام، مكتب عمل مريح مع إضاءة مناسبة، خدمة تنظيف وكي الملابس على مدار 24 ساعة.',
-        'image_url': 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=500&q=80',
-        'price_per_night': 18000.0,
-        'available_rooms': 8,
-        'phone': '778777888',
-      },
+      {'id': 1, 'hotel_name': 'فندق الأفق الملكي VIP', 'room_type': 'جناح ملكي تنفيذي', 'location': 'حي حِدة', 'description': 'شامل الإفطار الصباحي والإنترنت.', 'image_url': 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&q=80', 'price_per_night': 45000.0, 'available_rooms': 3, 'phone': '778111222'},
     ];
   }
 
@@ -731,18 +684,149 @@ class ApiService {
           )
         ''');
         await conn.execute(
+          Sql.named('INSERT INTO hotel_rooms (hotel_name, room_type, location, description, image_url, price_per_night, available_rooms, phone) VALUES (@hotel, @type, @loc, @desc, @img, @price, @rooms, @phone)'),
+          parameters: {'hotel': hotelName, 'type': roomType, 'loc': location, 'desc': description, 'img': imageUrl, 'price': pricePerNight, 'rooms': availableRooms, 'phone': phone},
+        );
+        await conn.close();
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // ===================== قطاع تأجير السيارات السياحية والعائلية =====================
+  static Future<List<Map<String, dynamic>>> fetchRentalCars() async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS rental_cars (
+            id SERIAL PRIMARY KEY,
+            agency_name VARCHAR(150) NOT NULL,
+            car_model VARCHAR(150) NOT NULL,
+            car_category VARCHAR(100) NOT NULL,
+            model_year INT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price_per_day NUMERIC(10, 2) NOT NULL,
+            available_units INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        final res = await conn.execute(Sql.named('SELECT id, agency_name, car_model, car_category, model_year, description, image_url, price_per_day, available_units, phone FROM rental_cars ORDER BY id DESC'));
+        await conn.close();
+        if (res.isNotEmpty) {
+          return res.map((r) => {
+            'id': r[0],
+            'agency_name': r[1].toString(),
+            'car_model': r[2].toString(),
+            'car_category': r[3].toString(),
+            'model_year': r[4] as int,
+            'description': r[5].toString(),
+            'image_url': r[6].toString(),
+            'price_per_day': (r[7] as num).toDouble(),
+            'available_units': r[8] as int,
+            'phone': r[9]?.toString() ?? '770000000',
+          }).toList();
+        }
+      } catch (_) {}
+    }
+    return [
+      {
+        'id': 1,
+        'agency_name': 'شركة الصقر لتأجير السيارات الحديثة',
+        'car_model': 'تويوتا لاندكروزر VXR فل كامل',
+        'car_category': 'دفع رباعي عائلي (4x4)',
+        'model_year': 2024,
+        'description': 'سيارة عائلية 7 مقاعد، مكيف مركزي، شاشات خلفية، تأمين شامل، ومجهزة للرحلات الطويلة.',
+        'image_url': 'https://images.unsplash.com/photo-1594502184342-2e12f877aa73?w=500&q=80',
+        'price_per_day': 65000.0,
+        'available_units': 3,
+        'phone': '776111222',
+      },
+      {
+        'id': 2,
+        'agency_name': 'معرض اليمامة لتأجير السيارات',
+        'car_model': 'هيونداي إلنترا سمارت بلس',
+        'car_category': 'سيدان اقتصادي',
+        'model_year': 2023,
+        'description': 'اقتصادية جداً في البنزين، جير أوتوماتيك، كاميرا خلفية، وبلوتوث. مناسبة لتنقلات المدينة.',
+        'image_url': 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=500&q=80',
+        'price_per_day': 22000.0,
+        'available_units': 5,
+        'phone': '776333444',
+      },
+      {
+        'id': 3,
+        'agency_name': 'العروبة لتأجير السيارات الفارهة',
+        'car_model': 'مرسيدس بنز E-Class VIP',
+        'car_category': 'سيارات VIP فاخرة',
+        'model_year': 2024,
+        'description': 'فخامة رجال الأعمال، مقاعد جلدية فاخرة تبريد وتسخين، عزل صوتي متكامل وسائق حسب الطلب.',
+        'image_url': 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?w=500&q=80',
+        'price_per_day': 95000.0,
+        'available_units': 2,
+        'phone': '776555666',
+      },
+      {
+        'id': 4,
+        'agency_name': 'شركة الأندلس للخدمات السياحية',
+        'car_model': 'تويوتا هايس باص سياحي سقف عالي',
+        'car_category': 'باصات عائلية وسياحية',
+        'model_year': 2022,
+        'description': '14 راكب، تكييف أمامي وخلفي قوي، مقاعد مريحة متحركة، مثالي للرحلات السياحية والتنقل الجماعي.',
+        'image_url': 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=500&q=80',
+        'price_per_day': 40000.0,
+        'available_units': 4,
+        'phone': '776777888',
+      },
+    ];
+  }
+
+  static Future<bool> addRentalCar({
+    required String agencyName,
+    required String carModel,
+    required String carCategory,
+    required int modelYear,
+    required String description,
+    required String imageUrl,
+    required double pricePerDay,
+    required int availableUnits,
+    required String phone,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        await conn.execute('''
+          CREATE TABLE IF NOT EXISTS rental_cars (
+            id SERIAL PRIMARY KEY,
+            agency_name VARCHAR(150) NOT NULL,
+            car_model VARCHAR(150) NOT NULL,
+            car_category VARCHAR(100) NOT NULL,
+            model_year INT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            image_url TEXT NOT NULL DEFAULT '',
+            price_per_day NUMERIC(10, 2) NOT NULL,
+            available_units INT NOT NULL,
+            phone VARCHAR(50) NOT NULL
+          )
+        ''');
+        await conn.execute(
           Sql.named(
-            'INSERT INTO hotel_rooms (hotel_name, room_type, location, description, image_url, price_per_night, available_rooms, phone) '
-            'VALUES (@hotel, @type, @loc, @desc, @img, @price, @rooms, @phone)'
+            'INSERT INTO rental_cars (agency_name, car_model, car_category, model_year, description, image_url, price_per_day, available_units, phone) '
+            'VALUES (@agn, @mod, @cat, @yr, @desc, @img, @price, @units, @phone)'
           ),
           parameters: {
-            'hotel': hotelName,
-            'type': roomType,
-            'loc': location,
+            'agn': agencyName,
+            'mod': carModel,
+            'cat': carCategory,
+            'yr': modelYear,
             'desc': description,
             'img': imageUrl,
-            'price': pricePerNight,
-            'rooms': availableRooms,
+            'price': pricePerDay,
+            'units': availableUnits,
             'phone': phone,
           },
         );
