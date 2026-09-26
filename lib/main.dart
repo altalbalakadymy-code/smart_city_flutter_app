@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const SmartCityApp());
 }
 
@@ -11,14 +12,13 @@ class SmartCityApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Smart City Super App',
+      title: 'المدينة الذكية',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        fontFamily: 'Roboto',
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF0B132B),
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
+        useMaterial3: true,
       ),
-      home: const LoginScreen(),
+      home: const HomeScreen(),
     );
   }
 }
