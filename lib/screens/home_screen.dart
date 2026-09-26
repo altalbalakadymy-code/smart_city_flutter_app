@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
 import 'sectors_screen.dart';
 import 'metaverse_screen.dart';
@@ -39,6 +40,17 @@ class _HomeScreenState extends State<HomeScreen> {
     };
   }
 
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('saved_user_session');
+
+    if (!mounted) return;
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final role = user['role'] ?? 'CLIENT';
@@ -66,7 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
-          // زر الانتقال إلى تذاكري وحجوزاتي
           IconButton(
             icon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF06B6D4)),
             tooltip: 'تذاكري وحجوزاتي',
@@ -78,7 +89,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.white70),
-            onPressed: () => Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen())),
+            tooltip: 'تسجيل الخروج',
+            onPressed: _logout,
           ),
         ],
       ),
