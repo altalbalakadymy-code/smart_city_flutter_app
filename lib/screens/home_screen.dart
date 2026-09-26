@@ -16,6 +16,7 @@ import 'car_rental_screen.dart';
 import 'real_estate_screen.dart';
 import 'my_bookings_screen.dart';
 import 'budget_matcher_screen.dart';
+import 'qr_scanner_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic>? currentUser;
@@ -55,6 +56,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final role = user['role'] ?? 'CLIENT';
+    final isAuthorized = role == 'ADMIN' || role == 'VENDOR';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
@@ -79,6 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          if (isAuthorized)
+            IconButton(
+              icon: const Icon(Icons.qr_code_scanner, color: Color(0xFF10B981)),
+              tooltip: 'التحقق من التذاكر',
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => QrScannerScreen(currentUser: user))),
+            ),
           IconButton(
             icon: const Icon(Icons.confirmation_number_outlined, color: Color(0xFF06B6D4)),
             tooltip: 'تذاكري وحجوزاتي',
@@ -100,7 +108,6 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // بطاقة المستخدم
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
@@ -157,8 +164,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
-            // بطاقة محرك مطابقة الميزانية الذكي (Smart Budget Matcher)
             InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => BudgetMatcherScreen(currentUser: user))),
               child: Container(
@@ -192,8 +197,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 14),
-
-            // بطاقة الميتافيرس
             InkWell(
               onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MetaverseScreen())),
               child: Container(
@@ -221,7 +224,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 24),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -233,7 +235,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             const SizedBox(height: 10),
-
             GridView.count(
               crossAxisCount: 3,
               crossAxisSpacing: 10,
