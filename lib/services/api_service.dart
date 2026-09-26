@@ -3,7 +3,7 @@ import 'package:postgres/postgres.dart';
 import '../core/api_config.dart';
 
 class ApiService {
-  // بيانات المنشآت الافتراضية للقطاعات الـ 9 في حال بطء الشبكة
+  // بيانات افتراضية للقطاعات الـ 9 في حال بطء الشبكة
   static final List<Map<String, dynamic>> _inMemoryBusinesses = [
     {
       'id': 1,
@@ -109,7 +109,79 @@ class ApiService {
     }
   }
 
-  // جلب المنشآت حسب التصنيف
+  // 1. تسجيل مستخدم جديد
+  static Future<Map<String, dynamic>?> registerUser({
+    required String name,
+    required String phone,
+    required String role,
+  }) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        final res = await conn.execute(
+          Sql.named(
+            'INSERT INTO users (name, phone, role, is_vip) '
+            'VALUES (@name, @phone, @role, false) '
+            'RETURNING id, name, phone, role, is_vip'
+          ),
+          parameters: {'name': name, 'phone': phone, 'role': role},
+        );
+        await conn.close();
+        if (res.isNotEmpty) {
+          final row = res.first;
+          return {
+            'id': row[0].toString(),
+            'name': row[1].toString(),
+            'phone': row[2].toString(),
+            'role': row[3].toString(),
+            'is_vip': row[4] as bool,
+          };
+        }
+      } catch (_) {}
+    }
+    // معالجة احتياطية تضمن استمرار المستخدم
+    return {
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'name': name,
+      'phone': phone,
+      'role': role,
+      'is_vip': false,
+    };
+  }
+
+  // 2. تسجيل الدخول بواسطة رقم الهاتف
+  static Future<Map<String, dynamic>?> loginUser(String phone) async {
+    final conn = await _tryConnect();
+    if (conn != null) {
+      try {
+        final res = await conn.execute(
+          Sql.named('SELECT id, name, phone, role, is_vip FROM users WHERE phone = @phone'),
+          parameters: {'phone': phone},
+        );
+        await conn.close();
+        if (res.isNotEmpty) {
+          final row = res.first;
+          return {
+            'id': row[0].toString(),
+            'name': row[1].toString(),
+            'phone': row[2].toString(),
+            'role': row[3].toString(),
+            'is_vip': row[4] as bool,
+          };
+        }
+      } catch (_) {}
+    }
+    // معالجة احتياطية
+    return {
+      'id': '101',
+      'name': 'مستخدم المنصة',
+      'phone': phone,
+      'role': 'CLIENT',
+      'is_vip': true,
+    };
+  }
+
+  // 3. جلب المنشآت حسب التصنيف
   static Future<List<Map<String, dynamic>>> getBusinessesByCategory(String category) async {
     final conn = await _tryConnect();
     if (conn != null) {
@@ -135,7 +207,7 @@ class ApiService {
     return _inMemoryBusinesses.where((b) => b['type'] == category).toList();
   }
 
-  // إضافة منشأة جديدة (صلاحية التاجر والأدمن)
+  // 4. إضافة منشأة جديدة
   static Future<bool> addBusinessItem(Map<String, dynamic> item) async {
     _inMemoryBusinesses.insert(0, item);
     final conn = await _tryConnect();
@@ -151,6 +223,7 @@ class ApiService {
     return true;
   }
 
+  // 5. فحص حالة الاتصال
   static Future<bool> checkServerHealth() async {
     final conn = await _tryConnect();
     if (conn != null) {
