@@ -1,6 +1,7 @@
-name: smart_city_app
-description: "A comprehensive Flutter Super App for Smart City Metaverse and Services."
+name: smart_city_flutter_app
+description: "A new Flutter project for Smart City 3D platform."
 publish_to: 'none'
+
 version: 1.0.0+1
 
 environment:
@@ -10,10 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  http: ^1.2.1
-  provider: ^6.1.2
-  google_fonts: ^6.2.1
-  webview_flutter: ^4.7.0
+  postgres: ^3.1.2
 
 dev_dependencies:
   flutter_test:
